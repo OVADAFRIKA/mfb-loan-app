@@ -100,18 +100,52 @@ async function login(event) {
 
 async function showDashboard(authUser) {
 
-  const { data: user, error } = await supabaseClient
-    .from("users")
-    .select(`
-      id,
-      staff_id,
-      full_name,
-      email,
-      role,
-      status
-    `)
-    .eq("id", authUser.id)
-.maybeSingle();
+ const { data: users, error } = await supabaseClient
+  .from("users")
+  .select(`
+    id,
+    staff_id,
+    full_name,
+    email,
+    role,
+    status
+  `)
+  .eq("id", authUser.id)
+  .limit(1);
+
+const user = users?.[0];
+
+if (error || !user) {
+
+  root.innerHTML = `
+    <div class="login-container">
+
+      <div class="login-card">
+
+        <h1>Account Error</h1>
+
+        <p>
+          Your authentication account was found,
+          but your staff profile could not be loaded.
+        </p>
+
+        <p>
+          ${error ? error.message : "No matching staff profile was found."}
+        </p>
+
+        <button
+          class="primary-btn"
+          onclick="logout()"
+        >
+          Sign Out
+        </button>
+
+      </div>
+    </div>
+  `;
+
+  return;
+}
 
   if (error) {
 
