@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://akfalevsehmeonlhajhp.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzIiwicmVmIjoiYWtmYWxldnNlaG1lb25saGFqaHAiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc4ODYzMTkyNSwiZXhwIjoyMTA0MjA3OTI1fQ.nMzx0lWJPI3kdBHpIRK9ACS7039asjTmdyINPLYkv28";
+  "sb_publishable_taM1rWJIBmXvGmm-eXDtNA_ACwHVdGh";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
