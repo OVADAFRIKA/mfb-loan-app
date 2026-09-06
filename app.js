@@ -3,7 +3,7 @@ const SUPABASE_URL = "https://akfalevsehmeonlhajhp.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzIiwicmVmIjoiYWtmYWxldnNlaG1lb25saGFqaHAiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc4ODYzMTkyNSwiZXhwIjoyMTA0MjA3OTI1fQ.nMzx0lWJPI3kdBHpIRK9ACS7039asjTmdyINPLYkv28";
 
-const supabase = window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
@@ -13,7 +13,7 @@ const root = document.getElementById("root");
 async function loadApplication() {
   const {
     data: { session }
-  } = await supabase.auth.getSession();
+  } = await supabaseClient.auth.getSession();
 
   if (session) {
     await showDashboard(session.user);
@@ -29,9 +29,7 @@ function showLogin() {
 
         <h1>MFB Loan Appraisal System</h1>
 
-        <p>
-          Secure staff login
-        </p>
+        <p>Secure staff login</p>
 
         <form id="loginForm">
 
@@ -86,10 +84,11 @@ async function login(event) {
 
   message.textContent = "Signing in...";
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
   if (error) {
     message.textContent = error.message;
@@ -101,7 +100,7 @@ async function login(event) {
 
 async function showDashboard(authUser) {
 
-  const { data: user, error } = await supabase
+  const { data: user, error } = await supabaseClient
     .from("users")
     .select(`
       id,
@@ -115,8 +114,10 @@ async function showDashboard(authUser) {
     .single();
 
   if (error) {
+
     root.innerHTML = `
       <div class="login-container">
+
         <div class="login-card">
 
           <h1>Account Error</h1>
@@ -138,6 +139,7 @@ async function showDashboard(authUser) {
           </button>
 
         </div>
+
       </div>
     `;
 
@@ -145,10 +147,12 @@ async function showDashboard(authUser) {
   }
 
   if (user.status !== "active") {
-    await supabase.auth.signOut();
+
+    await supabaseClient.auth.signOut();
 
     root.innerHTML = `
       <div class="login-container">
+
         <div class="login-card">
 
           <h1>Account Inactive</h1>
@@ -159,6 +163,7 @@ async function showDashboard(authUser) {
           </p>
 
         </div>
+
       </div>
     `;
 
@@ -171,6 +176,7 @@ async function showDashboard(authUser) {
       <h1>MFB Loan Appraisal System</h1>
 
       <div>
+
         ${user.full_name}
         &nbsp; | &nbsp;
         ${formatRole(user.role)}
@@ -182,6 +188,7 @@ async function showDashboard(authUser) {
         >
           Sign Out
         </button>
+
       </div>
 
     </div>
@@ -242,30 +249,22 @@ async function showDashboard(authUser) {
 
           <div class="stat-card">
             <h3>Customers</h3>
-            <div class="value" id="customerCount">
-              -
-            </div>
+            <div class="value" id="customerCount">-</div>
           </div>
 
           <div class="stat-card">
             <h3>Loan Applications</h3>
-            <div class="value" id="loanCount">
-              -
-            </div>
+            <div class="value" id="loanCount">-</div>
           </div>
 
           <div class="stat-card">
             <h3>Under Review</h3>
-            <div class="value" id="reviewCount">
-              -
-            </div>
+            <div class="value" id="reviewCount">-</div>
           </div>
 
           <div class="stat-card">
             <h3>Approved</h3>
-            <div class="value" id="approvedCount">
-              -
-            </div>
+            <div class="value" id="approvedCount">-</div>
           </div>
 
         </div>
@@ -285,40 +284,44 @@ async function showDashboard(authUser) {
     </div>
   `;
 
-  await loadDashboardStatistics(user);
+  await loadDashboardStatistics();
 }
 
-async function loadDashboardStatistics(user) {
+async function loadDashboardStatistics() {
 
-  const { count: customerCount } = await supabase
-    .from("customers")
-    .select("*", {
-      count: "exact",
-      head: true
-    });
+  const { count: customerCount } =
+    await supabaseClient
+      .from("customers")
+      .select("*", {
+        count: "exact",
+        head: true
+      });
 
-  const { count: loanCount } = await supabase
-    .from("loan_applications")
-    .select("*", {
-      count: "exact",
-      head: true
-    });
+  const { count: loanCount } =
+    await supabaseClient
+      .from("loan_applications")
+      .select("*", {
+        count: "exact",
+        head: true
+      });
 
-  const { count: reviewCount } = await supabase
-    .from("loan_applications")
-    .select("*", {
-      count: "exact",
-      head: true
-    })
-    .eq("status", "under_review");
+  const { count: reviewCount } =
+    await supabaseClient
+      .from("loan_applications")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("status", "under_review");
 
-  const { count: approvedCount } = await supabase
-    .from("loan_applications")
-    .select("*", {
-      count: "exact",
-      head: true
-    })
-    .eq("status", "approved");
+  const { count: approvedCount } =
+    await supabaseClient
+      .from("loan_applications")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("status", "approved");
 
   document.getElementById("customerCount").textContent =
     customerCount ?? 0;
@@ -347,17 +350,19 @@ function formatRole(role) {
 
 async function logout() {
 
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
 
   showLogin();
 }
 
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange(
+  (event, session) => {
 
-  if (event === "SIGNED_OUT") {
-    showLogin();
+    if (event === "SIGNED_OUT") {
+      showLogin();
+    }
+
   }
-
-});
+);
 
 loadApplication();
