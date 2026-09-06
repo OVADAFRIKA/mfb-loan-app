@@ -111,7 +111,7 @@ async function showDashboard(authUser) {
       status
     `)
     .eq("id", authUser.id)
-    .single();
+.maybeSingle();
 
   if (error) {
 
