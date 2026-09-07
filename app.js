@@ -1049,7 +1049,12 @@ async function showCustomerProfile(customerId) {
 >
   Guarantors
 </button>
-
+<button
+  class="primary-btn"
+  onclick="showNewLoan('${customer.id}')"
+>
+  New Loan
+</button>
             <button
               class="secondary-btn"
               onclick="alert('Loans module will be activated next.')"
