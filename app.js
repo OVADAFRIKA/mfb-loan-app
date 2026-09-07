@@ -880,28 +880,18 @@ async function saveCustomer(event) {
 
   message.textContent = "Saving customer...";
 
-const {
-  data: { session }
-} = await supabaseClient.auth.getSession();
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
 
-if (!session) {
-  message.textContent = "Your session has expired. Please sign in again.";
-  return;
-}
-
-const authUser = session.user;
-
-  if (!authUser) {
-
+  if (!session) {
     message.textContent =
       "Your session has expired. Please sign in again.";
-
     return;
   }
 
   const customerCode =
-    "CUS-" +
-    Date.now().toString().slice(-8);
+    "CUS-" + Date.now().toString().slice(-8);
 
   const customerData = {
 
@@ -958,9 +948,7 @@ const authUser = session.user;
     residence_status:
       document.getElementById("residence_status").value || null,
 
-    customer_status: "active",
-
-    created_by: authUser.id
+    customer_status: "active"
 
   };
 
