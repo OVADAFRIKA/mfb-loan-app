@@ -2586,3 +2586,505 @@ async function saveBusiness(customerId, businessId) {
     );
   }
 }
+async function showGuarantors(customerId) {
+  try {
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    // Get customer information
+    const { data: customer, error: customerError } =
+      await supabaseClient
+        .from("customers")
+        .select("id, customer_code, full_name")
+        .eq("id", customerId)
+        .single();
+
+    if (customerError) {
+      throw customerError;
+    }
+
+    // Get existing guarantors for this customer
+    const { data: guarantors, error: guarantorError } =
+      await supabaseClient
+        .from("guarantors")
+        .select(`
+          id,
+          customer_id,
+          loan_application_id,
+          full_name,
+          address,
+          phone_number,
+          relationship,
+          guarantor_number,
+          status
+        `)
+        .eq("customer_id", customerId)
+        .order("guarantor_number", { ascending: true });
+
+    if (guarantorError) {
+      throw guarantorError;
+    }
+
+    const guarantorList = guarantors || [];
+
+    document.getElementById("root").innerHTML = `
+      <div class="app-container">
+
+        <div class="page-header">
+          <div>
+            <h1>Guarantors</h1>
+            <p>
+              Customer:
+              <strong>${customer.full_name}</strong>
+              (${customer.customer_code})
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+
+          <h2>Guarantor Information</h2>
+
+          <p>
+            You can add one or more guarantors for this customer.
+          </p>
+
+          <div id="guarantor-list">
+
+            ${
+              guarantorList.length === 0
+                ? `
+                  <div style="
+                    padding:15px;
+                    background:#f8f9fa;
+                    border-radius:6px;
+                    margin-bottom:20px;
+                  ">
+                    No guarantor has been added yet.
+                  </div>
+                `
+                : guarantorList.map((guarantor, index) => `
+                  <div style="
+                    border:1px solid #ddd;
+                    border-radius:8px;
+                    padding:15px;
+                    margin-bottom:15px;
+                  ">
+                    <h3>
+                      Guarantor ${guarantor.guarantor_number || index + 1}
+                    </h3>
+
+                    <p>
+                      <strong>Name:</strong>
+                      ${guarantor.full_name}
+                    </p>
+
+                    <p>
+                      <strong>Phone:</strong>
+                      ${guarantor.phone_number || "Not provided"}
+                    </p>
+
+                    <p>
+                      <strong>Relationship:</strong>
+                      ${guarantor.relationship || "Not provided"}
+                    </p>
+
+                    <p>
+                      <strong>Address:</strong>
+                      ${guarantor.address || "Not provided"}
+                    </p>
+
+                    <p>
+                      <strong>Status:</strong>
+                      ${guarantor.status || "active"}
+                    </p>
+
+                    <button
+                      class="secondary-btn"
+                      onclick="editGuarantor(
+                        '${customerId}',
+                        '${guarantor.id}'
+                      )"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                `).join("")
+            }
+
+          </div>
+
+          <hr style="margin:25px 0;">
+
+          <h2>Add Guarantor</h2>
+
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input
+                type="text"
+                id="guarantor_name"
+                placeholder="Enter guarantor full name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input
+                type="text"
+                id="guarantor_phone"
+                placeholder="Enter phone number"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Relationship</label>
+              <select id="guarantor_relationship">
+                <option value="">Select relationship</option>
+                <option value="Spouse">Spouse</option>
+                <option value="Father">Father</option>
+                <option value="Mother">Mother</option>
+                <option value="Brother">Brother</option>
+                <option value="Sister">Sister</option>
+                <option value="Son">Son</option>
+                <option value="Daughter">Daughter</option>
+                <option value="Relative">Relative</option>
+                <option value="Friend">Friend</option>
+                <option value="Employer">Employer</option>
+                <option value="Business Associate">Business Associate</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Guarantor Number</label>
+              <input
+                type="number"
+                id="guarantor_number"
+                min="1"
+                value="${guarantorList.length + 1}"
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>Address</label>
+              <textarea
+                id="guarantor_address"
+                rows="4"
+                placeholder="Enter guarantor address"
+              ></textarea>
+            </div>
+
+          </div>
+
+          <div style="
+            margin-top:20px;
+            display:flex;
+            gap:10px;
+          ">
+
+            <button
+              class="primary-btn"
+              onclick="saveGuarantor('${customerId}')"
+            >
+              Save Guarantor
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="showCustomerProfile('${customerId}')"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  } catch (error) {
+
+    console.error("Guarantor error:", error);
+
+    document.getElementById("root").innerHTML = `
+      <div class="card">
+
+        <h2>Unable to load Guarantors</h2>
+
+        <p>${error.message}</p>
+
+        <button
+          class="secondary-btn"
+          onclick="showCustomerProfile('${customerId}')"
+        >
+          Back to Customer Profile
+        </button>
+
+      </div>
+    `;
+  }
+}
+
+
+async function saveGuarantor(customerId) {
+  try {
+
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const name =
+      document.getElementById("guarantor_name").value.trim();
+
+    const phone =
+      document.getElementById("guarantor_phone").value.trim();
+
+    const relationship =
+      document.getElementById("guarantor_relationship").value;
+
+    const address =
+      document.getElementById("guarantor_address").value.trim();
+
+    const guarantorNumber =
+      Number(document.getElementById("guarantor_number").value);
+
+    if (!name) {
+      alert("Please enter the Guarantor's full name.");
+      return;
+    }
+
+    if (!guarantorNumber || guarantorNumber < 1) {
+      alert("Please enter a valid Guarantor Number.");
+      return;
+    }
+
+    const guarantorData = {
+      customer_id: customerId,
+      full_name: name,
+      phone_number: phone || null,
+      relationship: relationship || null,
+      address: address || null,
+      guarantor_number: guarantorNumber,
+      status: "active"
+    };
+
+    const { error } = await supabaseClient
+      .from("guarantors")
+      .insert([guarantorData]);
+
+    if (error) {
+      throw error;
+    }
+
+    alert("Guarantor saved successfully.");
+
+    showGuarantors(customerId);
+
+  } catch (error) {
+
+    console.error("Save Guarantor error:", error);
+
+    alert(
+      "Unable to save Guarantor: " +
+      error.message
+    );
+  }
+}
+
+
+async function editGuarantor(customerId, guarantorId) {
+  try {
+
+    const { data: guarantor, error } =
+      await supabaseClient
+        .from("guarantors")
+        .select(`
+          id,
+          full_name,
+          address,
+          phone_number,
+          relationship,
+          guarantor_number,
+          status
+        `)
+        .eq("id", guarantorId)
+        .eq("customer_id", customerId)
+        .single();
+
+    if (error) {
+      throw error;
+    }
+
+    document.getElementById("root").innerHTML = `
+      <div class="app-container">
+
+        <div class="page-header">
+          <div>
+            <h1>Edit Guarantor</h1>
+          </div>
+        </div>
+
+        <div class="card">
+
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input
+                type="text"
+                id="edit_guarantor_name"
+                value="${guarantor.full_name || ""}"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input
+                type="text"
+                id="edit_guarantor_phone"
+                value="${guarantor.phone_number || ""}"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Relationship</label>
+              <input
+                type="text"
+                id="edit_guarantor_relationship"
+                value="${guarantor.relationship || ""}"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Guarantor Number</label>
+              <input
+                type="number"
+                id="edit_guarantor_number"
+                min="1"
+                value="${guarantor.guarantor_number || 1}"
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>Address</label>
+              <textarea
+                id="edit_guarantor_address"
+                rows="4"
+              >${guarantor.address || ""}</textarea>
+            </div>
+
+          </div>
+
+          <div style="
+            margin-top:20px;
+            display:flex;
+            gap:10px;
+          ">
+
+            <button
+              class="primary-btn"
+              onclick="updateGuarantor(
+                '${customerId}',
+                '${guarantorId}'
+              )"
+            >
+              Update Guarantor
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="showGuarantors('${customerId}')"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  } catch (error) {
+
+    console.error("Edit Guarantor error:", error);
+
+    alert(
+      "Unable to load Guarantor: " +
+      error.message
+    );
+  }
+}
+
+
+async function updateGuarantor(customerId, guarantorId) {
+  try {
+
+    const name =
+      document.getElementById("edit_guarantor_name").value.trim();
+
+    const phone =
+      document.getElementById("edit_guarantor_phone").value.trim();
+
+    const relationship =
+      document.getElementById("edit_guarantor_relationship").value.trim();
+
+    const address =
+      document.getElementById("edit_guarantor_address").value.trim();
+
+    const guarantorNumber =
+      Number(document.getElementById("edit_guarantor_number").value);
+
+    if (!name) {
+      alert("Please enter the Guarantor's full name.");
+      return;
+    }
+
+    const guarantorData = {
+      full_name: name,
+      phone_number: phone || null,
+      relationship: relationship || null,
+      address: address || null,
+      guarantor_number: guarantorNumber
+    };
+
+    const { error } = await supabaseClient
+      .from("guarantors")
+      .update(guarantorData)
+      .eq("id", guarantorId)
+      .eq("customer_id", customerId);
+
+    if (error) {
+      throw error;
+    }
+
+    alert("Guarantor updated successfully.");
+
+    showGuarantors(customerId);
+
+  } catch (error) {
+
+    console.error("Update Guarantor error:", error);
+
+    alert(
+      "Unable to update Guarantor: " +
+      error.message
+    );
+  }
+}
