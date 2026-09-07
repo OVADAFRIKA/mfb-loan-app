@@ -1036,12 +1036,12 @@ async function showCustomerProfile(customerId) {
   Next of Kin
 </button>
 
-            <button
-              class="secondary-btn"
-              onclick="alert('Business module will be activated next.')"
-            >
-              Business
-            </button>
+           <button
+  class="secondary-btn"
+  onclick="showBusiness('${customer.id}')"
+>
+  Business
+</button>
 
             <button
               class="secondary-btn"
