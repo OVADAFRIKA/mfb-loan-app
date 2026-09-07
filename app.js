@@ -1023,11 +1023,11 @@ async function showCustomerProfile(customerId) {
           ">
 
             <button
-              class="secondary-btn"
-              onclick="alert('KYC module will be activated next.')"
-            >
-              KYC
-            </button>
+  class="secondary-btn"
+  onclick="showKYC('${customer.id}')"
+>
+  KYC
+</button>
 
             <button
               class="secondary-btn"
@@ -1065,6 +1065,519 @@ async function showCustomerProfile(customerId) {
 
     </div>
   `;
+}
+async function showKYC(customerId) {
+
+  const { data: customer, error: customerError } =
+    await supabaseClient
+      .from("customers")
+      .select(`
+        id,
+        customer_code,
+        full_name
+      `)
+      .eq("id", customerId)
+      .single();
+
+  if (customerError || !customer) {
+
+    root.innerHTML = `
+      <div class="main-content">
+
+        <div class="card">
+
+          <h2>KYC</h2>
+
+          <p style="margin-top:10px;">
+            Unable to load customer information.
+          </p>
+
+          <p style="margin-top:8px;">
+            ${
+              customerError
+                ? customerError.message
+                : "Customer not found."
+            }
+          </p>
+
+          <button
+            class="secondary-btn"
+            onclick="showCustomers()"
+            style="margin-top:20px;"
+          >
+            Back to Customers
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    return;
+  }
+
+
+  const { data: kyc, error: kycError } =
+    await supabaseClient
+      .from("customer_kyc")
+      .select(`
+        id,
+        bvn,
+        nin,
+        id_type,
+        id_number,
+        id_issue_date,
+        id_expiry_date,
+        verification_status,
+        verification_date,
+        verified_by
+      `)
+      .eq("customer_id", customerId)
+      .maybeSingle();
+
+
+  root.innerHTML = `
+
+    <div class="app-header">
+
+      <h1>MFB Loan Appraisal System</h1>
+
+      <div>
+
+        KYC Verification
+
+        <button
+          class="secondary-btn"
+          onclick="logout()"
+          style="margin-left:15px;"
+        >
+          Sign Out
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="app-container">
+
+      <aside class="sidebar">
+
+        <button onclick="showDashboardAfterNavigation()">
+          Dashboard
+        </button>
+
+        <button onclick="showCustomers()">
+          Customers
+        </button>
+
+        <button onclick="showCustomerForm()">
+          New Customer
+        </button>
+
+        <button>
+          Loan Applications
+        </button>
+
+        <button>
+          New Loan
+        </button>
+
+        <button>
+          Credit Appraisal
+        </button>
+
+        <button>
+          Approvals
+        </button>
+
+        <button>
+          Portfolio
+        </button>
+
+        <button>
+          Reports
+        </button>
+
+      </aside>
+
+
+      <main class="main-content">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:20px;
+        ">
+
+          <div>
+
+            <h2>KYC Verification</h2>
+
+            <p style="margin-top:6px;">
+              Customer:
+              <strong>${customer.full_name}</strong>
+              &nbsp; | &nbsp;
+              Customer Code:
+              <strong>${customer.customer_code}</strong>
+            </p>
+
+          </div>
+
+          <button
+            class="secondary-btn"
+            onclick="showCustomerProfile('${customer.id}')"
+          >
+            ← Back to Profile
+          </button>
+
+        </div>
+
+
+        <div class="card">
+
+          <h3>Identity Information</h3>
+
+          <div class="form-grid" style="margin-top:20px;">
+
+            <div class="form-group">
+
+              <label>BVN</label>
+
+              <input
+                type="text"
+                id="kyc_bvn"
+                placeholder="Enter BVN"
+                maxlength="11"
+                value="${kyc?.bvn || ""}"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>NIN</label>
+
+              <input
+                type="text"
+                id="kyc_nin"
+                placeholder="Enter NIN"
+                maxlength="11"
+                value="${kyc?.nin || ""}"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>Identification Type</label>
+
+              <select id="kyc_id_type">
+
+                <option value="">
+                  Select identification type
+                </option>
+
+                <option
+                  value="National ID"
+                  ${kyc?.id_type === "National ID" ? "selected" : ""}
+                >
+                  National ID
+                </option>
+
+                <option
+                  value="International Passport"
+                  ${kyc?.id_type === "International Passport" ? "selected" : ""}
+                >
+                  International Passport
+                </option>
+
+                <option
+                  value="Driver's Licence"
+                  ${kyc?.id_type === "Driver's Licence" ? "selected" : ""}
+                >
+                  Driver's Licence
+                </option>
+
+                <option
+                  value="Voter's Card"
+                  ${kyc?.id_type === "Voter's Card" ? "selected" : ""}
+                >
+                  Voter's Card
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>Identification Number</label>
+
+              <input
+                type="text"
+                id="kyc_id_number"
+                placeholder="Enter ID number"
+                value="${kyc?.id_number || ""}"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>ID Issue Date</label>
+
+              <input
+                type="date"
+                id="kyc_id_issue_date"
+                value="${kyc?.id_issue_date || ""}"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>ID Expiry Date</label>
+
+              <input
+                type="date"
+                id="kyc_id_expiry_date"
+                value="${kyc?.id_expiry_date || ""}"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>Verification Status</label>
+
+              <select id="kyc_verification_status">
+
+                <option
+                  value="pending"
+                  ${
+                    !kyc ||
+                    kyc.verification_status === "pending"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  Pending
+                </option>
+
+                <option
+                  value="verified"
+                  ${
+                    kyc?.verification_status === "verified"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  Verified
+                </option>
+
+                <option
+                  value="failed"
+                  ${
+                    kyc?.verification_status === "failed"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  Failed
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <div style="margin-top:25px;">
+
+            <button
+              type="button"
+              class="primary-btn"
+              onclick="saveKYC('${customer.id}', '${kyc?.id || ""}')"
+            >
+              Save KYC
+            </button>
+
+            <button
+              type="button"
+              class="secondary-btn"
+              onclick="showCustomerProfile('${customer.id}')"
+              style="margin-left:10px;"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+
+          <p
+            id="kycMessage"
+            style="margin-top:15px;"
+          ></p>
+
+        </div>
+
+
+        ${
+          kyc
+            ? `
+              <div class="card" style="margin-top:20px;">
+
+                <h3>KYC Record</h3>
+
+                <p style="margin-top:10px;">
+                  Current verification status:
+                  <strong>
+                    ${kyc.verification_status || "Pending"}
+                  </strong>
+                </p>
+
+                ${
+                  kyc.verification_date
+                    ? `
+                      <p style="margin-top:6px;">
+                        Verification Date:
+                        ${new Date(
+                          kyc.verification_date
+                        ).toLocaleString()}
+                      </p>
+                    `
+                    : ""
+                }
+
+              </div>
+            `
+            : ""
+        }
+
+      </main>
+
+    </div>
+
+  `;
+}
+async function saveKYC(customerId, kycId) {
+
+  const message =
+    document.getElementById("kycMessage");
+
+  message.textContent = "Saving KYC...";
+
+
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+
+  if (!session) {
+
+    message.textContent =
+      "Your session has expired. Please sign in again.";
+
+    return;
+  }
+
+
+  const verificationStatus =
+    document.getElementById(
+      "kyc_verification_status"
+    ).value;
+
+
+  const kycData = {
+
+    customer_id: customerId,
+
+    bvn:
+      document.getElementById("kyc_bvn").value.trim() || null,
+
+    nin:
+      document.getElementById("kyc_nin").value.trim() || null,
+
+    id_type:
+      document.getElementById("kyc_id_type").value || null,
+
+    id_number:
+      document.getElementById("kyc_id_number").value.trim() || null,
+
+    id_issue_date:
+      document.getElementById("kyc_id_issue_date").value || null,
+
+    id_expiry_date:
+      document.getElementById("kyc_id_expiry_date").value || null,
+
+    verification_status:
+      verificationStatus,
+
+    verification_date:
+      verificationStatus === "verified"
+        ? new Date().toISOString()
+        : null,
+
+    verified_by:
+      verificationStatus === "verified"
+        ? session.user.id
+        : null
+
+  };
+
+
+  let result;
+
+
+  if (kycId) {
+
+    result = await supabaseClient
+      .from("customer_kyc")
+      .update(kycData)
+      .eq("id", kycId)
+      .select()
+      .single();
+
+  } else {
+
+    result = await supabaseClient
+      .from("customer_kyc")
+      .insert([kycData])
+      .select()
+      .single();
+
+  }
+
+
+  if (result.error) {
+
+    message.textContent =
+      "Unable to save KYC: " +
+      result.error.message;
+
+    return;
+  }
+
+
+  message.textContent =
+    "KYC information saved successfully.";
+
+
+  setTimeout(() => {
+
+    showCustomerProfile(customerId);
+
+  }, 1000);
+
 }
 function showCustomerForm() {
 
