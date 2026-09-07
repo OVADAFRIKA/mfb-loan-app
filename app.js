@@ -381,7 +381,7 @@ function formatRole(role) {
 
   return roles[role] || role;
 }
-async function async function showCustomers() {
+async function showCustomers() {
 
   const { data: customers, error } = await supabaseClient
     .from("customers")
