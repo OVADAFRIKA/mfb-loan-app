@@ -763,9 +763,9 @@ async function showCustomerProfile(customerId) {
           New Customer
         </button>
 
-        <button>
-          Loan Applications
-        </button>
+        <button onclick="showLoanApplications()">
+  Loan Applications
+</button>
 
         <button>
           New Loan
