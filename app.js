@@ -381,7 +381,7 @@ function formatRole(role) {
 
   return roles[role] || role;
 }
-async function showCustomers() {
+async function async function showCustomers() {
 
   const { data: customers, error } = await supabaseClient
     .from("customers")
@@ -476,7 +476,12 @@ async function showCustomers() {
 
       <main class="main-content">
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:20px;
+        ">
 
           <div>
             <h2>Customers</h2>
@@ -502,29 +507,62 @@ async function showCustomers() {
               ? `
                 <div style="overflow-x:auto;">
 
-                  <table style="width:100%; border-collapse:collapse;">
+                  <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                  ">
 
                     <thead>
                       <tr>
-                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+
+                        <th style="
+                          text-align:left;
+                          padding:12px;
+                          border-bottom:1px solid #ddd;
+                        ">
                           Customer Code
                         </th>
 
-                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                        <th style="
+                          text-align:left;
+                          padding:12px;
+                          border-bottom:1px solid #ddd;
+                        ">
                           Full Name
                         </th>
 
-                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                        <th style="
+                          text-align:left;
+                          padding:12px;
+                          border-bottom:1px solid #ddd;
+                        ">
                           Phone
                         </th>
 
-                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                        <th style="
+                          text-align:left;
+                          padding:12px;
+                          border-bottom:1px solid #ddd;
+                        ">
                           State
                         </th>
 
-                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                        <th style="
+                          text-align:left;
+                          padding:12px;
+                          border-bottom:1px solid #ddd;
+                        ">
                           Status
                         </th>
+
+                        <th style="
+                          text-align:left;
+                          padding:12px;
+                          border-bottom:1px solid #ddd;
+                        ">
+                          Action
+                        </th>
+
                       </tr>
                     </thead>
 
@@ -533,24 +571,53 @@ async function showCustomers() {
                       ${customers.map(customer => `
                         <tr>
 
-                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                          <td style="
+                            padding:12px;
+                            border-bottom:1px solid #eee;
+                          ">
                             ${customer.customer_code || "-"}
                           </td>
 
-                          <td style="padding:12px; border-bottom:1px solid #eee;">
-                            ${customer.full_name}
+                          <td style="
+                            padding:12px;
+                            border-bottom:1px solid #eee;
+                          ">
+                            ${customer.full_name || "-"}
                           </td>
 
-                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                          <td style="
+                            padding:12px;
+                            border-bottom:1px solid #eee;
+                          ">
                             ${customer.primary_phone || "-"}
                           </td>
 
-                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                          <td style="
+                            padding:12px;
+                            border-bottom:1px solid #eee;
+                          ">
                             ${customer.state || "-"}
                           </td>
 
-                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                          <td style="
+                            padding:12px;
+                            border-bottom:1px solid #eee;
+                          ">
                             ${customer.customer_status || "-"}
+                          </td>
+
+                          <td style="
+                            padding:12px;
+                            border-bottom:1px solid #eee;
+                          ">
+
+                            <button
+                              class="primary-btn"
+                              onclick="showCustomerProfile('${customer.id}')"
+                            >
+                              View Profile
+                            </button>
+
                           </td>
 
                         </tr>
@@ -563,7 +630,11 @@ async function showCustomers() {
                 </div>
               `
               : `
-                <div style="padding:30px; text-align:center;">
+                <div style="
+                  padding:30px;
+                  text-align:center;
+                ">
+
                   <h3>No customers registered yet</h3>
 
                   <p style="margin:10px 0 20px;">
@@ -576,9 +647,417 @@ async function showCustomers() {
                   >
                     + Register Customer
                   </button>
+
                 </div>
               `
           }
+
+        </div>
+
+      </main>
+
+    </div>
+  `;
+}
+async function showCustomerProfile(customerId) {
+
+  const { data: customer, error } = await supabaseClient
+    .from("customers")
+    .select(`
+      id,
+      customer_code,
+      customer_type,
+      full_name,
+      other_previous_name,
+      gender,
+      date_of_birth,
+      marital_status,
+      dependants,
+      nationality,
+      primary_phone,
+      alternative_phone,
+      email,
+      residential_address,
+      state,
+      lga,
+      landmark,
+      years_at_address,
+      residence_status,
+      customer_status,
+      created_at
+    `)
+    .eq("id", customerId)
+    .single();
+
+  if (error || !customer) {
+
+    root.innerHTML = `
+      <div class="main-content">
+
+        <div class="card">
+
+          <h2>Customer Profile</h2>
+
+          <p style="margin-top:10px;">
+            Unable to load customer profile.
+          </p>
+
+          <p style="margin-top:8px;">
+            ${error ? error.message : "Customer not found."}
+          </p>
+
+          <button
+            class="secondary-btn"
+            onclick="showCustomers()"
+            style="margin-top:20px;"
+          >
+            Back to Customers
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  root.innerHTML = `
+
+    <div class="app-header">
+
+      <h1>MFB Loan Appraisal System</h1>
+
+      <div>
+
+        Customer Profile
+
+        <button
+          class="secondary-btn"
+          onclick="logout()"
+          style="margin-left:15px;"
+        >
+          Sign Out
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="app-container">
+
+      <aside class="sidebar">
+
+        <button onclick="showDashboardAfterNavigation()">
+          Dashboard
+        </button>
+
+        <button
+          class="active"
+          onclick="showCustomers()"
+        >
+          Customers
+        </button>
+
+        <button onclick="showCustomerForm()">
+          New Customer
+        </button>
+
+        <button>
+          Loan Applications
+        </button>
+
+        <button>
+          New Loan
+        </button>
+
+        <button>
+          Credit Appraisal
+        </button>
+
+        <button>
+          Approvals
+        </button>
+
+        <button>
+          Portfolio
+        </button>
+
+        <button>
+          Reports
+        </button>
+
+      </aside>
+
+      <main class="main-content">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:20px;
+        ">
+
+          <div>
+
+            <h2>${customer.full_name}</h2>
+
+            <p style="margin-top:6px;">
+              Customer Code:
+              <strong>${customer.customer_code}</strong>
+            </p>
+
+          </div>
+
+          <button
+            class="secondary-btn"
+            onclick="showCustomers()"
+          >
+            ← Back to Customers
+          </button>
+
+        </div>
+
+
+        <!-- CUSTOMER SUMMARY -->
+
+        <div class="card">
+
+          <h3>Customer Information</h3>
+
+          <div class="form-grid" style="margin-top:20px;">
+
+            <div class="form-group">
+              <label>Customer Code</label>
+              <input
+                type="text"
+                value="${customer.customer_code || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Customer Type</label>
+              <input
+                type="text"
+                value="${customer.customer_type || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Full Name</label>
+              <input
+                type="text"
+                value="${customer.full_name || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Previous Name</label>
+              <input
+                type="text"
+                value="${customer.other_previous_name || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Gender</label>
+              <input
+                type="text"
+                value="${customer.gender || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input
+                type="text"
+                value="${customer.date_of_birth || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Marital Status</label>
+              <input
+                type="text"
+                value="${customer.marital_status || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Dependants</label>
+              <input
+                type="text"
+                value="${customer.dependants ?? 0}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Nationality</label>
+              <input
+                type="text"
+                value="${customer.nationality || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Primary Phone</label>
+              <input
+                type="text"
+                value="${customer.primary_phone || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Alternative Phone</label>
+              <input
+                type="text"
+                value="${customer.alternative_phone || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Email Address</label>
+              <input
+                type="text"
+                value="${customer.email || "-"}"
+                readonly
+              />
+            </div>
+
+            <div
+              class="form-group"
+              style="grid-column:1/-1;"
+            >
+              <label>Residential Address</label>
+
+              <textarea
+                rows="3"
+                readonly
+              >${customer.residential_address || "-"}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label>State</label>
+              <input
+                type="text"
+                value="${customer.state || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>LGA</label>
+              <input
+                type="text"
+                value="${customer.lga || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Landmark</label>
+              <input
+                type="text"
+                value="${customer.landmark || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Years at Address</label>
+              <input
+                type="text"
+                value="${customer.years_at_address ?? 0}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Residence Status</label>
+              <input
+                type="text"
+                value="${customer.residence_status || "-"}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Customer Status</label>
+              <input
+                type="text"
+                value="${customer.customer_status || "-"}"
+                readonly
+              />
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- CUSTOMER MODULES -->
+
+        <div class="card" style="margin-top:20px;">
+
+          <h3>Customer Credit File</h3>
+
+          <p style="margin-top:8px; margin-bottom:20px;">
+            Complete the customer's credit file through the sections below.
+          </p>
+
+          <div style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+            gap:12px;
+          ">
+
+            <button
+              class="secondary-btn"
+              onclick="alert('KYC module will be activated next.')"
+            >
+              KYC
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="alert('Next of Kin module will be activated next.')"
+            >
+              Next of Kin
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="alert('Business module will be activated next.')"
+            >
+              Business
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="alert('Guarantors module will be activated next.')"
+            >
+              Guarantors
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="alert('Loans module will be activated next.')"
+            >
+              Loans
+            </button>
+
+          </div>
 
         </div>
 
