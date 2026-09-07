@@ -3479,3 +3479,217 @@ async function saveLoanApplication(customerId) {
     );
   }
 }
+async function showLoanApplications() {
+  try {
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const { data: loans, error } =
+      await supabaseClient
+        .from("loan_applications")
+        .select(`
+          id,
+          loan_code,
+          customer_id,
+          business_id,
+          loan_type,
+          requested_amount,
+          requested_tenor,
+          repayment_frequency,
+          interest_rate,
+          interest_method,
+          status,
+          application_date,
+          customers (
+            full_name,
+            customer_code
+          ),
+          loan_purpose_types (
+            name
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    const loanList = loans || [];
+
+    document.getElementById("root").innerHTML = `
+      <div class="app-container">
+
+        <div class="page-header">
+          <div>
+            <h1>Loan Applications</h1>
+            <p>Manage and review customer loan applications.</p>
+          </div>
+        </div>
+
+        <div class="card">
+
+          ${
+            loanList.length === 0
+              ? `
+                <p>No loan applications found.</p>
+              `
+              : `
+                <div style="overflow-x:auto;">
+
+                  <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                  ">
+
+                    <thead>
+                      <tr>
+                        <th style="padding:10px; text-align:left;">
+                          Loan Code
+                        </th>
+
+                        <th style="padding:10px; text-align:left;">
+                          Customer
+                        </th>
+
+                        <th style="padding:10px; text-align:right;">
+                          Amount
+                        </th>
+
+                        <th style="padding:10px; text-align:center;">
+                          Tenor
+                        </th>
+
+                        <th style="padding:10px; text-align:left;">
+                          Purpose
+                        </th>
+
+                        <th style="padding:10px; text-align:left;">
+                          Status
+                        </th>
+
+                        <th style="padding:10px; text-align:center;">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+
+                      ${
+                        loanList.map(loan => `
+                          <tr style="
+                            border-top:1px solid #ddd;
+                          ">
+
+                            <td style="padding:10px;">
+                              <strong>
+                                ${loan.loan_code}
+                              </strong>
+                            </td>
+
+                            <td style="padding:10px;">
+                              ${
+                                loan.customers?.full_name ||
+                                "Unknown Customer"
+                              }
+
+                              <br>
+
+                              <small>
+                                ${
+                                  loan.customers?.customer_code ||
+                                  ""
+                                }
+                              </small>
+                            </td>
+
+                            <td style="
+                              padding:10px;
+                              text-align:right;
+                            ">
+                              ₦${Number(
+                                loan.requested_amount || 0
+                              ).toLocaleString()}
+                            </td>
+
+                            <td style="
+                              padding:10px;
+                              text-align:center;
+                            ">
+                              ${loan.requested_tenor} months
+                            </td>
+
+                            <td style="padding:10px;">
+                              ${
+                                loan.loan_purpose_types?.name ||
+                                "Not specified"
+                              }
+                            </td>
+
+                            <td style="padding:10px;">
+                              ${loan.status}
+                            </td>
+
+                            <td style="
+                              padding:10px;
+                              text-align:center;
+                            ">
+                              <button
+                                class="secondary-btn"
+                                onclick="showLoanDetails(
+                                  '${loan.id}'
+                                )"
+                              >
+                                View
+                              </button>
+                            </td>
+
+                          </tr>
+                        `).join("")
+                      }
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+              `
+          }
+
+        </div>
+
+      </div>
+    `;
+
+  } catch (error) {
+
+    console.error(
+      "Loan Applications error:",
+      error
+    );
+
+    document.getElementById("root").innerHTML = `
+      <div class="card">
+
+        <h2>Unable to load Loan Applications</h2>
+
+        <p>${error.message}</p>
+
+        <button
+          class="secondary-btn"
+          onclick="showDashboard()"
+        >
+          Back to Dashboard
+        </button>
+
+      </div>
+    `;
+  }
+}
