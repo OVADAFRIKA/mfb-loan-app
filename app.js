@@ -243,9 +243,9 @@ if (error || !user) {
   New Customer
 </button>
 
-        <button>
-          Loan Applications
-        </button>
+       <button onclick="showLoanApplications()">
+  Loan Applications
+</button>
 
         <button>
           New Loan
