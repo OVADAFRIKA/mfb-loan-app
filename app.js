@@ -1029,12 +1029,12 @@ async function showCustomerProfile(customerId) {
   KYC
 </button>
 
-            <button
-              class="secondary-btn"
-              onclick="alert('Next of Kin module will be activated next.')"
-            >
-              Next of Kin
-            </button>
+           <button
+  class="secondary-btn"
+  onclick="showNextOfKin('${customer.id}')"
+>
+  Next of Kin
+</button>
 
             <button
               class="secondary-btn"
@@ -1991,3 +1991,229 @@ supabaseClient.auth.onAuthStateChange(
 );
 
 loadApplication();
+async function showNextOfKin(customerId) {
+  try {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    // Get customer information
+    const { data: customer, error: customerError } = await supabaseClient
+      .from("customers")
+      .select("id, customer_code, full_name")
+      .eq("id", customerId)
+      .single();
+
+    if (customerError) {
+      throw customerError;
+    }
+
+    // Get existing next of kin record
+    const { data: nextOfKin, error: nokError } = await supabaseClient
+      .from("next_of_kin")
+      .select(`
+        id,
+        customer_id,
+        name,
+        address,
+        phone_number,
+        relationship
+      `)
+      .eq("customer_id", customerId)
+      .maybeSingle();
+
+    if (nokError) {
+      throw nokError;
+    }
+
+    document.getElementById("root").innerHTML = `
+      <div class="app-container">
+
+        <div class="page-header">
+          <div>
+            <h1>Next of Kin</h1>
+            <p>
+              Customer: <strong>${customer.full_name}</strong>
+              (${customer.customer_code})
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+
+          <h2>Next of Kin Information</h2>
+
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input
+                type="text"
+                id="nok_name"
+                value="${nextOfKin?.name || ""}"
+                placeholder="Enter full name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input
+                type="text"
+                id="nok_phone"
+                value="${nextOfKin?.phone_number || ""}"
+                placeholder="Enter phone number"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Relationship</label>
+              <select id="nok_relationship">
+                <option value="">Select relationship</option>
+                <option value="Spouse">Spouse</option>
+                <option value="Father">Father</option>
+                <option value="Mother">Mother</option>
+                <option value="Brother">Brother</option>
+                <option value="Sister">Sister</option>
+                <option value="Son">Son</option>
+                <option value="Daughter">Daughter</option>
+                <option value="Relative">Relative</option>
+                <option value="Friend">Friend</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Address</label>
+              <textarea
+                id="nok_address"
+                rows="4"
+                placeholder="Enter next of kin address"
+              >${nextOfKin?.address || ""}</textarea>
+            </div>
+
+          </div>
+
+          <div style="margin-top:20px; display:flex; gap:10px;">
+
+            <button
+              class="primary-btn"
+              onclick="saveNextOfKin(
+                '${customerId}',
+                '${nextOfKin?.id || ""}'
+              )"
+            >
+              Save Next of Kin
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="showCustomerProfile('${customerId}')"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    // Set existing relationship after rendering
+    if (nextOfKin?.relationship) {
+      document.getElementById("nok_relationship").value =
+        nextOfKin.relationship;
+    }
+
+  } catch (error) {
+    console.error("Next of Kin error:", error);
+
+    document.getElementById("root").innerHTML = `
+      <div class="card">
+        <h2>Unable to load Next of Kin</h2>
+        <p>${error.message}</p>
+
+        <button
+          class="secondary-btn"
+          onclick="showCustomerProfile('${customerId}')"
+        >
+          Back to Customer Profile
+        </button>
+      </div>
+    `;
+  }
+}
+
+
+async function saveNextOfKin(customerId, nextOfKinId) {
+  try {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const name = document.getElementById("nok_name").value.trim();
+    const phone = document.getElementById("nok_phone").value.trim();
+    const relationship =
+      document.getElementById("nok_relationship").value;
+    const address =
+      document.getElementById("nok_address").value.trim();
+
+    if (!name) {
+      alert("Please enter the Next of Kin name.");
+      return;
+    }
+
+    const nextOfKinData = {
+      customer_id: customerId,
+      name: name,
+      phone_number: phone || null,
+      relationship: relationship || null,
+      address: address || null
+    };
+
+    let result;
+
+    if (nextOfKinId) {
+
+      result = await supabaseClient
+        .from("next_of_kin")
+        .update(nextOfKinData)
+        .eq("id", nextOfKinId)
+        .eq("customer_id", customerId)
+        .select()
+        .single();
+
+    } else {
+
+      result = await supabaseClient
+        .from("next_of_kin")
+        .insert([nextOfKinData])
+        .select()
+        .single();
+    }
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    alert("Next of Kin saved successfully.");
+
+    showCustomerProfile(customerId);
+
+  } catch (error) {
+    console.error("Save Next of Kin error:", error);
+
+    alert(
+      "Unable to save Next of Kin: " +
+      error.message
+    );
+  }
+}
