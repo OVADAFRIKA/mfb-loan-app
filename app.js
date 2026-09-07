@@ -2217,3 +2217,372 @@ async function saveNextOfKin(customerId, nextOfKinId) {
     );
   }
 }
+async function showBusiness(customerId) {
+  try {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    // Get customer information
+    const { data: customer, error: customerError } =
+      await supabaseClient
+        .from("customers")
+        .select("id, customer_code, full_name")
+        .eq("id", customerId)
+        .single();
+
+    if (customerError) {
+      throw customerError;
+    }
+
+    // Get existing business record
+    const { data: business, error: businessError } =
+      await supabaseClient
+        .from("businesses")
+        .select(`
+          id,
+          customer_id,
+          business_name,
+          nature_of_business,
+          business_type,
+          sector,
+          business_address,
+          state,
+          lga,
+          landmark,
+          date_business_started,
+          premises_status,
+          time_at_current_premises,
+          number_of_employees,
+          number_of_locations
+        `)
+        .eq("customer_id", customerId)
+        .maybeSingle();
+
+    if (businessError) {
+      throw businessError;
+    }
+
+    document.getElementById("root").innerHTML = `
+      <div class="app-container">
+
+        <div class="page-header">
+          <div>
+            <h1>Business Information</h1>
+            <p>
+              Customer:
+              <strong>${customer.full_name}</strong>
+              (${customer.customer_code})
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+
+          <h2>Business Details</h2>
+
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Business Name *</label>
+              <input
+                type="text"
+                id="business_name"
+                value="${business?.business_name || ""}"
+                placeholder="Enter business name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Nature of Business</label>
+              <input
+                type="text"
+                id="nature_of_business"
+                value="${business?.nature_of_business || ""}"
+                placeholder="e.g. Trading, Manufacturing, Services"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Business Type</label>
+              <select id="business_type">
+                <option value="">Select business type</option>
+                <option value="Sole Proprietorship">Sole Proprietorship</option>
+                <option value="Partnership">Partnership</option>
+                <option value="Limited Liability Company">Limited Liability Company</option>
+                <option value="Cooperative">Cooperative</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Sector</label>
+              <select id="sector">
+                <option value="">Select sector</option>
+                <option value="Trading">Trading</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Services">Services</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Food & Hospitality">Food & Hospitality</option>
+                <option value="Construction">Construction</option>
+                <option value="Education">Education</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Business Address</label>
+              <input
+                type="text"
+                id="business_address"
+                value="${business?.business_address || ""}"
+                placeholder="Enter business address"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>State</label>
+              <input
+                type="text"
+                id="business_state"
+                value="${business?.state || ""}"
+                placeholder="Enter state"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>LGA</label>
+              <input
+                type="text"
+                id="business_lga"
+                value="${business?.lga || ""}"
+                placeholder="Enter LGA"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Landmark</label>
+              <input
+                type="text"
+                id="business_landmark"
+                value="${business?.landmark || ""}"
+                placeholder="Enter nearby landmark"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Date Business Started</label>
+              <input
+                type="date"
+                id="date_business_started"
+                value="${business?.date_business_started || ""}"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Premises Status</label>
+              <select id="premises_status">
+                <option value="">Select premises status</option>
+                <option value="Owned">Owned</option>
+                <option value="Rented">Rented</option>
+                <option value="Leased">Leased</option>
+                <option value="Family Property">Family Property</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Time at Current Premises</label>
+              <input
+                type="text"
+                id="time_at_current_premises"
+                value="${business?.time_at_current_premises || ""}"
+                placeholder="e.g. 3 years"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Number of Employees</label>
+              <input
+                type="number"
+                id="number_of_employees"
+                min="0"
+                value="${business?.number_of_employees ?? ""}"
+                placeholder="Enter number"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Number of Business Locations</label>
+              <input
+                type="number"
+                id="number_of_locations"
+                min="1"
+                value="${business?.number_of_locations ?? 1}"
+              />
+            </div>
+
+          </div>
+
+          <div style="margin-top:20px; display:flex; gap:10px;">
+
+            <button
+              class="primary-btn"
+              onclick="saveBusiness(
+                '${customerId}',
+                '${business?.id || ""}'
+              )"
+            >
+              Save Business
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="showCustomerProfile('${customerId}')"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    // Set existing select values
+    if (business?.business_type) {
+      document.getElementById("business_type").value =
+        business.business_type;
+    }
+
+    if (business?.sector) {
+      document.getElementById("sector").value =
+        business.sector;
+    }
+
+    if (business?.premises_status) {
+      document.getElementById("premises_status").value =
+        business.premises_status;
+    }
+
+  } catch (error) {
+    console.error("Business error:", error);
+
+    document.getElementById("root").innerHTML = `
+      <div class="card">
+        <h2>Unable to load Business Information</h2>
+        <p>${error.message}</p>
+
+        <button
+          class="secondary-btn"
+          onclick="showCustomerProfile('${customerId}')"
+        >
+          Back to Customer Profile
+        </button>
+      </div>
+    `;
+  }
+}
+
+
+async function saveBusiness(customerId, businessId) {
+  try {
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const businessName =
+      document.getElementById("business_name").value.trim();
+
+    if (!businessName) {
+      alert("Please enter the Business Name.");
+      return;
+    }
+
+    const businessData = {
+      customer_id: customerId,
+      business_name: businessName,
+      nature_of_business:
+        document.getElementById("nature_of_business").value.trim() || null,
+      business_type:
+        document.getElementById("business_type").value || null,
+      sector:
+        document.getElementById("sector").value || null,
+      business_address:
+        document.getElementById("business_address").value.trim() || null,
+      state:
+        document.getElementById("business_state").value.trim() || null,
+      lga:
+        document.getElementById("business_lga").value.trim() || null,
+      landmark:
+        document.getElementById("business_landmark").value.trim() || null,
+      date_business_started:
+        document.getElementById("date_business_started").value || null,
+      premises_status:
+        document.getElementById("premises_status").value || null,
+      time_at_current_premises:
+        document.getElementById("time_at_current_premises").value.trim() || null,
+      number_of_employees:
+        document.getElementById("number_of_employees").value
+          ? Number(document.getElementById("number_of_employees").value)
+          : null,
+      number_of_locations:
+        document.getElementById("number_of_locations").value
+          ? Number(document.getElementById("number_of_locations").value)
+          : 1
+    };
+
+    // Automatically record the authenticated staff member
+    businessData.created_by = session.user.id;
+
+    let result;
+
+    if (businessId) {
+
+      result = await supabaseClient
+        .from("businesses")
+        .update(businessData)
+        .eq("id", businessId)
+        .eq("customer_id", customerId)
+        .select()
+        .single();
+
+    } else {
+
+      result = await supabaseClient
+        .from("businesses")
+        .insert([businessData])
+        .select()
+        .single();
+    }
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    alert("Business information saved successfully.");
+
+    showCustomerProfile(customerId);
+
+  } catch (error) {
+    console.error("Save Business error:", error);
+
+    alert(
+      "Unable to save Business Information: " +
+      error.message
+    );
+  }
+}
