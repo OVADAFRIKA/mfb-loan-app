@@ -3088,3 +3088,388 @@ async function updateGuarantor(customerId, guarantorId) {
     );
   }
 }
+async function showNewLoan(customerId) {
+  try {
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const { data: customer, error: customerError } =
+      await supabaseClient
+        .from("customers")
+        .select("id, customer_code, full_name")
+        .eq("id", customerId)
+        .single();
+
+    if (customerError) {
+      throw customerError;
+    }
+
+    const { data: businesses, error: businessError } =
+      await supabaseClient
+        .from("businesses")
+        .select(`
+          id,
+          business_name,
+          nature_of_business,
+          business_type,
+          sector
+        `)
+        .eq("customer_id", customerId)
+        .order("business_name");
+
+    if (businessError) {
+      throw businessError;
+    }
+
+    const { data: purposes, error: purposeError } =
+      await supabaseClient
+        .from("loan_purpose_types")
+        .select("id, name, description")
+        .eq("is_active", true)
+        .order("name");
+
+    if (purposeError) {
+      throw purposeError;
+    }
+
+    const businessList = businesses || [];
+    const purposeList = purposes || [];
+
+    document.getElementById("root").innerHTML = `
+      <div class="app-container">
+
+        <div class="page-header">
+          <div>
+            <h1>New Loan Application</h1>
+            <p>
+              Customer:
+              <strong>${customer.full_name}</strong>
+              (${customer.customer_code})
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+
+          <h2>Loan Application Details</h2>
+
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Customer</label>
+              <input
+                type="text"
+                value="${customer.full_name}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Customer Code</label>
+              <input
+                type="text"
+                value="${customer.customer_code}"
+                readonly
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>Business *</label>
+              <select id="loan_business_id">
+                <option value="">Select Business</option>
+
+                ${
+                  businessList.map(business => `
+                    <option value="${business.id}">
+                      ${business.business_name}
+                    </option>
+                  `).join("")
+                }
+
+              </select>
+
+              ${
+                businessList.length === 0
+                  ? `
+                    <small style="color:#b00020;">
+                      No business information has been added for this customer.
+                      Please complete the Business section first.
+                    </small>
+                  `
+                  : ""
+              }
+
+            </div>
+
+            <div class="form-group">
+              <label>Loan Type *</label>
+              <select id="loan_type">
+                <option value="Working Capital Loan">
+                  Working Capital Loan
+                </option>
+                <option value="Business Expansion Loan">
+                  Business Expansion Loan
+                </option>
+                <option value="Asset Acquisition Loan">
+                  Asset Acquisition Loan
+                </option>
+                <option value="Equipment Finance">
+                  Equipment Finance
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Requested Amount (₦) *</label>
+              <input
+                type="number"
+                id="requested_amount"
+                min="1"
+                step="0.01"
+                placeholder="Enter requested amount"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Requested Tenor (Months) *</label>
+              <input
+                type="number"
+                id="requested_tenor"
+                min="1"
+                placeholder="e.g. 6"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Repayment Frequency *</label>
+              <select id="repayment_frequency">
+                <option value="weekly">Weekly</option>
+                <option value="bi-weekly">Bi-Weekly</option>
+                <option value="monthly" selected>Monthly</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Interest Rate (%)</label>
+              <input
+                type="number"
+                id="interest_rate"
+                min="0"
+                step="0.01"
+                placeholder="Enter interest rate"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Interest Method</label>
+              <select id="interest_method">
+                <option value="">Select Method</option>
+                <option value="Flat">Flat</option>
+                <option value="Reducing Balance">
+                  Reducing Balance
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Grace Period (Months)</label>
+              <input
+                type="number"
+                id="grace_period"
+                min="0"
+                value="0"
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>Purpose of Loan *</label>
+
+              <select id="loan_purpose_id">
+                <option value="">
+                  Select Purpose of Loan
+                </option>
+
+                ${
+                  purposeList.map(purpose => `
+                    <option value="${purpose.id}">
+                      ${purpose.name}
+                    </option>
+                  `).join("")
+                }
+
+              </select>
+            </div>
+
+          </div>
+
+          <div style="
+            margin-top:25px;
+            display:flex;
+            gap:10px;
+          ">
+
+            <button
+              class="primary-btn"
+              onclick="saveLoanApplication('${customerId}')"
+            >
+              Save Loan Application
+            </button>
+
+            <button
+              class="secondary-btn"
+              onclick="showCustomerProfile('${customerId}')"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  } catch (error) {
+
+    console.error("New Loan error:", error);
+
+    document.getElementById("root").innerHTML = `
+      <div class="card">
+
+        <h2>Unable to load New Loan Application</h2>
+
+        <p>${error.message}</p>
+
+        <button
+          class="secondary-btn"
+          onclick="showCustomerProfile('${customerId}')"
+        >
+          Back to Customer Profile
+        </button>
+
+      </div>
+    `;
+  }
+}
+
+
+async function saveLoanApplication(customerId) {
+  try {
+
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const businessId =
+      document.getElementById("loan_business_id").value;
+
+    const loanType =
+      document.getElementById("loan_type").value;
+
+    const requestedAmount =
+      Number(document.getElementById("requested_amount").value);
+
+    const requestedTenor =
+      Number(document.getElementById("requested_tenor").value);
+
+    const repaymentFrequency =
+      document.getElementById("repayment_frequency").value;
+
+    const interestRateValue =
+      document.getElementById("interest_rate").value;
+
+    const interestRate =
+      interestRateValue === ""
+        ? null
+        : Number(interestRateValue);
+
+    const interestMethod =
+      document.getElementById("interest_method").value;
+
+    const gracePeriod =
+      Number(document.getElementById("grace_period").value || 0);
+
+    const purposeId =
+      document.getElementById("loan_purpose_id").value;
+
+    if (!businessId) {
+      alert("Please select the customer's business.");
+      return;
+    }
+
+    if (!requestedAmount || requestedAmount <= 0) {
+      alert("Please enter a valid loan amount.");
+      return;
+    }
+
+    if (!requestedTenor || requestedTenor <= 0) {
+      alert("Please enter a valid loan tenor.");
+      return;
+    }
+
+    if (!purposeId) {
+      alert("Please select the Purpose of Loan.");
+      return;
+    }
+
+    const loanCode =
+      "LN-" +
+      Date.now().toString().slice(-8);
+
+    const loanData = {
+      loan_code: loanCode,
+      customer_id: customerId,
+      business_id: businessId,
+      loan_officer_id: session.user.id,
+      loan_type: loanType,
+      requested_amount: requestedAmount,
+      requested_tenor: requestedTenor,
+      repayment_frequency: repaymentFrequency,
+      interest_rate: interestRate,
+      interest_method: interestMethod || null,
+      grace_period: gracePeriod,
+      status: "draft"
+    };
+
+    const { error } =
+      await supabaseClient
+        .from("loan_applications")
+        .insert([loanData]);
+
+    if (error) {
+      throw error;
+    }
+
+    alert(
+      "Loan application saved successfully. Loan Code: " +
+      loanCode
+    );
+
+    showCustomerProfile(customerId);
+
+  } catch (error) {
+
+    console.error(
+      "Save Loan Application error:",
+      error
+    );
+
+    alert(
+      "Unable to save Loan Application: " +
+      error.message
+    );
+  }
+}
