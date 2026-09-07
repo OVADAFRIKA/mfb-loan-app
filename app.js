@@ -883,7 +883,8 @@ async function saveCustomer(event) {
   const {
     data: { session }
   } = await supabaseClient.auth.getSession();
-
+console.log("SESSION:", session);
+console.log("AUTH USER ID:", session?.user?.id);
   if (!session) {
     message.textContent =
       "Your session has expired. Please sign in again.";
