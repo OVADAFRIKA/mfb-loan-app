@@ -3446,6 +3446,7 @@ async function saveLoanApplication(customerId) {
       interest_rate: interestRate,
       interest_method: interestMethod || null,
       grace_period: gracePeriod,
+      loan_purpose_id: purposeId,
       status: "draft"
     };
 
