@@ -880,9 +880,16 @@ async function saveCustomer(event) {
 
   message.textContent = "Saving customer...";
 
-  const {
-    data: { user: authUser }
-  } = await supabaseClient.auth.getUser();
+const {
+  data: { session }
+} = await supabaseClient.auth.getSession();
+
+if (!session) {
+  message.textContent = "Your session has expired. Please sign in again.";
+  return;
+}
+
+const authUser = session.user;
 
   if (!authUser) {
 
