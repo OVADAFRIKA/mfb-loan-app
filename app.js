@@ -587,6 +587,399 @@ async function showCustomers() {
     </div>
   `;
 }
+function showCustomerForm() {
+
+  root.innerHTML = `
+    <div class="app-header">
+      <h1>MFB Loan Appraisal System</h1>
+
+      <div>
+        New Customer
+        <button
+          class="secondary-btn"
+          onclick="logout()"
+          style="margin-left:15px;"
+        >
+          Sign Out
+        </button>
+      </div>
+    </div>
+
+    <div class="app-container">
+
+      <aside class="sidebar">
+
+        <button onclick="showDashboardAfterNavigation()">
+          Dashboard
+        </button>
+
+        <button onclick="showCustomers()">
+          Customers
+        </button>
+
+        <button class="active">
+          New Customer
+        </button>
+
+        <button>
+          Loan Applications
+        </button>
+
+        <button>
+          New Loan
+        </button>
+
+        <button>
+          Credit Appraisal
+        </button>
+
+        <button>
+          Approvals
+        </button>
+
+        <button>
+          Portfolio
+        </button>
+
+        <button>
+          Reports
+        </button>
+
+      </aside>
+
+      <main class="main-content">
+
+        <h2>Customer Registration</h2>
+
+        <p style="margin:8px 0 25px;">
+          Register a new customer into the MFB loan appraisal system.
+        </p>
+
+        <div class="card">
+
+          <form id="customerForm">
+
+            <h3>Customer Information</h3>
+
+            <div class="form-grid">
+
+              <div class="form-group">
+                <label>Customer Type *</label>
+                <select id="customer_type" required>
+                  <option value="">Select customer type</option>
+                  <option value="Individual">Individual</option>
+                  <option value="Business">Business</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Full Name *</label>
+                <input
+                  type="text"
+                  id="full_name"
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Previous Name</label>
+                <input
+                  type="text"
+                  id="other_previous_name"
+                  placeholder="Previous name, if applicable"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Gender *</label>
+                <select id="gender" required>
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Date of Birth *</label>
+                <input
+                  type="date"
+                  id="date_of_birth"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Marital Status</label>
+                <select id="marital_status">
+                  <option value="">Select marital status</option>
+                  <option value="Single">Single</option>
+                  <option value="Married">Married</option>
+                  <option value="Divorced">Divorced</option>
+                  <option value="Widowed">Widowed</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Number of Dependants</label>
+                <input
+                  type="number"
+                  id="dependants"
+                  min="0"
+                  value="0"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Nationality</label>
+                <input
+                  type="text"
+                  id="nationality"
+                  value="Nigerian"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Primary Phone *</label>
+                <input
+                  type="tel"
+                  id="primary_phone"
+                  placeholder="080XXXXXXXX"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Alternative Phone</label>
+                <input
+                  type="tel"
+                  id="alternative_phone"
+                  placeholder="080XXXXXXXX"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="customer@email.com"
+                />
+              </div>
+
+              <div class="form-group" style="grid-column:1/-1;">
+                <label>Residential Address *</label>
+                <textarea
+                  id="residential_address"
+                  rows="3"
+                  placeholder="Enter residential address"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>State *</label>
+                <input
+                  type="text"
+                  id="state"
+                  placeholder="Enter state"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>LGA *</label>
+                <input
+                  type="text"
+                  id="lga"
+                  placeholder="Enter LGA"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Landmark</label>
+                <input
+                  type="text"
+                  id="landmark"
+                  placeholder="Nearest landmark"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Years at Address</label>
+                <input
+                  type="number"
+                  id="years_at_address"
+                  min="0"
+                  step="0.5"
+                  placeholder="e.g. 3"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Residence Status</label>
+                <select id="residence_status">
+                  <option value="">Select status</option>
+                  <option value="Owned">Owned</option>
+                  <option value="Rented">Rented</option>
+                  <option value="Family House">Family House</option>
+                  <option value="Employer Provided">Employer Provided</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+            </div>
+
+            <div style="margin-top:25px;">
+
+              <button
+                type="submit"
+                class="primary-btn"
+              >
+                Save Customer
+              </button>
+
+              <button
+                type="button"
+                class="secondary-btn"
+                onclick="showCustomers()"
+                style="margin-left:10px;"
+              >
+                Cancel
+              </button>
+
+            </div>
+
+            <p
+              id="customerMessage"
+              style="margin-top:15px;"
+            ></p>
+
+          </form>
+
+        </div>
+
+      </main>
+
+    </div>
+  `;
+
+  document
+    .getElementById("customerForm")
+    .addEventListener("submit", saveCustomer);
+}
+
+
+async function saveCustomer(event) {
+
+  event.preventDefault();
+
+  const message =
+    document.getElementById("customerMessage");
+
+  message.textContent = "Saving customer...";
+
+  const {
+    data: { user: authUser }
+  } = await supabaseClient.auth.getUser();
+
+  if (!authUser) {
+
+    message.textContent =
+      "Your session has expired. Please sign in again.";
+
+    return;
+  }
+
+  const customerCode =
+    "CUS-" +
+    Date.now().toString().slice(-8);
+
+  const customerData = {
+
+    customer_code: customerCode,
+
+    customer_type:
+      document.getElementById("customer_type").value,
+
+    full_name:
+      document.getElementById("full_name").value.trim(),
+
+    other_previous_name:
+      document.getElementById("other_previous_name").value.trim() || null,
+
+    gender:
+      document.getElementById("gender").value,
+
+    date_of_birth:
+      document.getElementById("date_of_birth").value,
+
+    marital_status:
+      document.getElementById("marital_status").value || null,
+
+    dependants:
+      Number(document.getElementById("dependants").value || 0),
+
+    nationality:
+      document.getElementById("nationality").value.trim() || "Nigerian",
+
+    primary_phone:
+      document.getElementById("primary_phone").value.trim(),
+
+    alternative_phone:
+      document.getElementById("alternative_phone").value.trim() || null,
+
+    email:
+      document.getElementById("email").value.trim() || null,
+
+    residential_address:
+      document.getElementById("residential_address").value.trim(),
+
+    state:
+      document.getElementById("state").value.trim(),
+
+    lga:
+      document.getElementById("lga").value.trim(),
+
+    landmark:
+      document.getElementById("landmark").value.trim() || null,
+
+    years_at_address:
+      Number(document.getElementById("years_at_address").value || 0),
+
+    residence_status:
+      document.getElementById("residence_status").value || null,
+
+    customer_status: "active",
+
+    created_by: authUser.id
+
+  };
+
+  const { data, error } =
+    await supabaseClient
+      .from("customers")
+      .insert([customerData])
+      .select()
+      .single();
+
+  if (error) {
+
+    message.textContent =
+      "Unable to save customer: " + error.message;
+
+    return;
+  }
+
+  message.textContent =
+    "Customer registered successfully. Customer Code: " +
+    data.customer_code;
+
+  setTimeout(() => {
+    showCustomers();
+  }, 1200);
+}
 function showDashboardAfterNavigation() {
 
   loadApplication();
