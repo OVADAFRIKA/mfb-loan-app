@@ -235,13 +235,13 @@ if (error || !user) {
           Dashboard
         </button>
 
-        <button>
-          Customers
-        </button>
+        <button onclick="showCustomers()">
+  Customers
+</button>
 
-        <button>
-          New Customer
-        </button>
+       <button onclick="showCustomerForm()">
+  New Customer
+</button>
 
         <button>
           Loan Applications
@@ -381,7 +381,217 @@ function formatRole(role) {
 
   return roles[role] || role;
 }
+async function showCustomers() {
 
+  const { data: customers, error } = await supabaseClient
+    .from("customers")
+    .select(`
+      id,
+      customer_code,
+      customer_type,
+      full_name,
+      gender,
+      primary_phone,
+      email,
+      state,
+      lga,
+      customer_status
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    root.innerHTML = `
+      <div class="main-content">
+        <h2>Customers</h2>
+
+        <div class="card">
+          <p>Unable to load customers.</p>
+          <p>${error.message}</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  root.innerHTML = `
+    <div class="app-header">
+
+      <h1>MFB Loan Appraisal System</h1>
+
+      <div>
+        Customer Management
+
+        <button
+          class="secondary-btn"
+          onclick="logout()"
+          style="margin-left:15px;"
+        >
+          Sign Out
+        </button>
+      </div>
+
+    </div>
+
+    <div class="app-container">
+
+      <aside class="sidebar">
+
+        <button onclick="showDashboardAfterNavigation()">
+          Dashboard
+        </button>
+
+        <button class="active">
+          Customers
+        </button>
+
+        <button onclick="showCustomerForm()">
+          New Customer
+        </button>
+
+        <button>
+          Loan Applications
+        </button>
+
+        <button>
+          New Loan
+        </button>
+
+        <button>
+          Credit Appraisal
+        </button>
+
+        <button>
+          Approvals
+        </button>
+
+        <button>
+          Portfolio
+        </button>
+
+        <button>
+          Reports
+        </button>
+
+      </aside>
+
+      <main class="main-content">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+
+          <div>
+            <h2>Customers</h2>
+
+            <p style="margin-top:6px;">
+              Customer registration and management
+            </p>
+          </div>
+
+          <button
+            class="primary-btn"
+            onclick="showCustomerForm()"
+          >
+            + New Customer
+          </button>
+
+        </div>
+
+        <div class="card">
+
+          ${
+            customers && customers.length > 0
+              ? `
+                <div style="overflow-x:auto;">
+
+                  <table style="width:100%; border-collapse:collapse;">
+
+                    <thead>
+                      <tr>
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                          Customer Code
+                        </th>
+
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                          Full Name
+                        </th>
+
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                          Phone
+                        </th>
+
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                          State
+                        </th>
+
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #ddd;">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+
+                      ${customers.map(customer => `
+                        <tr>
+
+                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                            ${customer.customer_code || "-"}
+                          </td>
+
+                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                            ${customer.full_name}
+                          </td>
+
+                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                            ${customer.primary_phone || "-"}
+                          </td>
+
+                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                            ${customer.state || "-"}
+                          </td>
+
+                          <td style="padding:12px; border-bottom:1px solid #eee;">
+                            ${customer.customer_status || "-"}
+                          </td>
+
+                        </tr>
+                      `).join("")}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+              `
+              : `
+                <div style="padding:30px; text-align:center;">
+                  <h3>No customers registered yet</h3>
+
+                  <p style="margin:10px 0 20px;">
+                    Start by registering your first customer.
+                  </p>
+
+                  <button
+                    class="primary-btn"
+                    onclick="showCustomerForm()"
+                  >
+                    + Register Customer
+                  </button>
+                </div>
+              `
+          }
+
+        </div>
+
+      </main>
+
+    </div>
+  `;
+}
+function showDashboardAfterNavigation() {
+
+  loadApplication();
+
+}
 async function logout() {
 
   await supabaseClient.auth.signOut();
