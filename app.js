@@ -3693,3 +3693,342 @@ async function showLoanApplications() {
     `;
   }
 }
+async function showLoanDetails(loanId) {
+
+  try {
+
+    const { data: loan, error } =
+      await supabaseClient
+        .from("loan_applications")
+        .select(`
+          id,
+          loan_code,
+          customer_id,
+          business_id,
+          loan_type,
+          requested_amount,
+          requested_tenor,
+          repayment_frequency,
+          interest_rate,
+          interest_method,
+          grace_period,
+          first_repayment_date,
+          recommended_amount,
+          recommended_tenor,
+          recommendation,
+          recommendation_reason,
+          status,
+          application_date,
+          submitted_at,
+          created_at
+        `)
+        .eq("id", loanId)
+        .single();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!loan) {
+      throw new Error("Loan application not found.");
+    }
+
+    root.innerHTML = `
+      <div class="app-header">
+
+        <h1>MFB Loan Appraisal System</h1>
+
+        <div>
+          Loan Application
+
+          <button
+            class="secondary-btn"
+            onclick="logout()"
+            style="margin-left:15px;"
+          >
+            Sign Out
+          </button>
+        </div>
+
+      </div>
+
+      <div class="app-container">
+
+        <aside class="sidebar">
+
+          <button onclick="showDashboardAfterNavigation()">
+            Dashboard
+          </button>
+
+          <button onclick="showCustomers()">
+            Customers
+          </button>
+
+          <button onclick="showCustomerForm()">
+            New Customer
+          </button>
+
+          <button
+            class="active"
+            onclick="showLoanApplications()"
+          >
+            Loan Applications
+          </button>
+
+          <button>
+            New Loan
+          </button>
+
+          <button>
+            Credit Appraisal
+          </button>
+
+          <button>
+            Approvals
+          </button>
+
+          <button>
+            Portfolio
+          </button>
+
+          <button>
+            Reports
+          </button>
+
+        </aside>
+
+        <main class="main-content">
+
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:20px;
+          ">
+
+            <div>
+
+              <h2>Loan Application</h2>
+
+              <p style="margin-top:6px;">
+                Loan Code:
+                <strong>${loan.loan_code}</strong>
+              </p>
+
+            </div>
+
+            <button
+              class="secondary-btn"
+              onclick="showLoanApplications()"
+            >
+              ← Back to Loan Applications
+            </button>
+
+          </div>
+
+          <div class="card">
+
+            <h3>Loan Information</h3>
+
+            <div
+              class="form-grid"
+              style="margin-top:20px;"
+            >
+
+              <div class="form-group">
+                <label>Loan Code</label>
+                <input
+                  type="text"
+                  value="${loan.loan_code || "-"}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Loan Type</label>
+                <input
+                  type="text"
+                  value="${loan.loan_type || "-"}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Requested Amount</label>
+                <input
+                  type="text"
+                  value="₦${Number(
+                    loan.requested_amount || 0
+                  ).toLocaleString()}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Requested Tenor</label>
+                <input
+                  type="text"
+                  value="${loan.requested_tenor || 0} months"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Repayment Frequency</label>
+                <input
+                  type="text"
+                  value="${loan.repayment_frequency || "-"}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Interest Rate</label>
+                <input
+                  type="text"
+                  value="${loan.interest_rate ?? "-"}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Interest Method</label>
+                <input
+                  type="text"
+                  value="${loan.interest_method || "-"}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Grace Period</label>
+                <input
+                  type="text"
+                  value="${loan.grace_period ?? 0} days"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Application Date</label>
+                <input
+                  type="text"
+                  value="${loan.application_date || "-"}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Status</label>
+                <input
+                  type="text"
+                  value="${loan.status || "-"}"
+                  readonly
+                />
+              </div>
+
+            </div>
+
+          </div>
+
+          <div
+            class="card"
+            style="margin-top:20px;"
+          >
+
+            <h3>Credit Recommendation</h3>
+
+            <div
+              class="form-grid"
+              style="margin-top:20px;"
+            >
+
+              <div class="form-group">
+                <label>Recommended Amount</label>
+                <input
+                  type="text"
+                  value="₦${Number(
+                    loan.recommended_amount || 0
+                  ).toLocaleString()}"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Recommended Tenor</label>
+                <input
+                  type="text"
+                  value="${
+                    loan.recommended_tenor
+                      ? loan.recommended_tenor + " months"
+                      : "-"
+                  }"
+                  readonly
+                />
+              </div>
+
+              <div
+                class="form-group"
+                style="grid-column:1/-1;"
+              >
+
+                <label>Recommendation</label>
+
+                <textarea
+                  rows="3"
+                  readonly
+                >${loan.recommendation || "-"}</textarea>
+
+              </div>
+
+              <div
+                class="form-group"
+                style="grid-column:1/-1;"
+              >
+
+                <label>Recommendation Reason</label>
+
+                <textarea
+                  rows="4"
+                  readonly
+                >${loan.recommendation_reason || "-"}</textarea>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </main>
+
+      </div>
+    `;
+
+  } catch (error) {
+
+    console.error(
+      "Loan Details error:",
+      error
+    );
+
+    root.innerHTML = `
+      <div class="card">
+
+        <h2>Unable to load Loan Application</h2>
+
+        <p style="margin-top:10px;">
+          ${error.message}
+        </p>
+
+        <button
+          class="secondary-btn"
+          onclick="showLoanApplications()"
+          style="margin-top:20px;"
+        >
+          ← Back to Loan Applications
+        </button>
+
+      </div>
+    `;
+  }
+}
