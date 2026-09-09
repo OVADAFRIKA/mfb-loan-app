@@ -3799,208 +3799,575 @@ async function showLoanDetails(loanId) {
 
         <main class="main-content">
 
-          <div style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:20px;
-          ">
+  <!-- PAGE HEADER -->
 
-            <div>
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+  ">
 
-              <h2>Loan Application</h2>
+    <div>
+      <h2>Loan Appraisal Worksheet</h2>
 
-              <p style="margin-top:6px;">
-                Loan Code:
-                <strong>${loan.loan_code}</strong>
-              </p>
+      <p style="margin-top:6px;">
+        Loan Code:
+        <strong>${loan.loan_code}</strong>
+      </p>
+    </div>
 
-            </div>
+    <button
+      class="secondary-btn"
+      onclick="showLoanApplications()"
+    >
+      ← Back to Loan Applications
+    </button>
 
-            <button
-              class="secondary-btn"
-              onclick="showLoanApplications()"
-            >
-              ← Back to Loan Applications
-            </button>
+  </div>
 
-          </div>
 
-          <div class="card">
+  <!-- WORKSHEET NAVIGATION -->
 
-            <h3>Loan Information</h3>
+  <div class="card">
 
-            <div
-              class="form-grid"
-              style="margin-top:20px;"
-            >
+    <h3>Appraisal Sections</h3>
 
-              <div class="form-group">
-                <label>Loan Code</label>
-                <input
-                  type="text"
-                  value="${loan.loan_code || "-"}"
-                  readonly
-                />
-              </div>
+    <p style="margin-top:8px; margin-bottom:18px;">
+      Complete the loan appraisal through the sections below.
+    </p>
 
-              <div class="form-group">
-                <label>Loan Type</label>
-                <input
-                  type="text"
-                  value="${loan.loan_type || "-"}"
-                  readonly
-                />
-              </div>
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+    ">
 
-              <div class="form-group">
-                <label>Requested Amount</label>
-                <input
-                  type="text"
-                  value="₦${Number(
-                    loan.requested_amount || 0
-                  ).toLocaleString()}"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('loanInformationSection').scrollIntoView({behavior:'smooth'})"
+      >
+        1. Loan Information
+      </button>
 
-              <div class="form-group">
-                <label>Requested Tenor</label>
-                <input
-                  type="text"
-                  value="${loan.requested_tenor || 0} months"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('customerSection').scrollIntoView({behavior:'smooth'})"
+      >
+        2. Customer
+      </button>
 
-              <div class="form-group">
-                <label>Repayment Frequency</label>
-                <input
-                  type="text"
-                  value="${loan.repayment_frequency || "-"}"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('businessSection').scrollIntoView({behavior:'smooth'})"
+      >
+        3. Business
+      </button>
 
-              <div class="form-group">
-                <label>Interest Rate</label>
-                <input
-                  type="text"
-                  value="${loan.interest_rate ?? "-"}"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('purposeSection').scrollIntoView({behavior:'smooth'})"
+      >
+        4. Loan Purpose
+      </button>
 
-              <div class="form-group">
-                <label>Interest Method</label>
-                <input
-                  type="text"
-                  value="${loan.interest_method || "-"}"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('financialSection').scrollIntoView({behavior:'smooth'})"
+      >
+        5. Financial Assessment
+      </button>
 
-              <div class="form-group">
-                <label>Grace Period</label>
-                <input
-                  type="text"
-                  value="${loan.grace_period ?? 0} days"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('inventorySection').scrollIntoView({behavior:'smooth'})"
+      >
+        6. Inventory Assessment
+      </button>
 
-              <div class="form-group">
-                <label>Application Date</label>
-                <input
-                  type="text"
-                  value="${loan.application_date || "-"}"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('existingLoansSection').scrollIntoView({behavior:'smooth'})"
+      >
+        7. Existing Loans
+      </button>
 
-              <div class="form-group">
-                <label>Status</label>
-                <input
-                  type="text"
-                  value="${loan.status || "-"}"
-                  readonly
-                />
-              </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('guarantorSection').scrollIntoView({behavior:'smooth'})"
+      >
+        8. Guarantors
+      </button>
 
-            </div>
+      <button
+        class="secondary-btn"
+        onclick="document.getElementById('recommendationSection').scrollIntoView({behavior:'smooth'})"
+      >
+        9. Recommendation
+      </button>
 
-          </div>
+    </div>
 
-          <div
-            class="card"
-            style="margin-top:20px;"
-          >
+  </div>
 
-            <h3>Credit Recommendation</h3>
 
-            <div
-              class="form-grid"
-              style="margin-top:20px;"
-            >
+  <!-- 1. LOAN INFORMATION -->
 
-              <div class="form-group">
-                <label>Recommended Amount</label>
-                <input
-                  type="text"
-                  value="₦${Number(
-                    loan.recommended_amount || 0
-                  ).toLocaleString()}"
-                  readonly
-                />
-              </div>
+  <div
+    class="card"
+    id="loanInformationSection"
+    style="margin-top:20px;"
+  >
 
-              <div class="form-group">
-                <label>Recommended Tenor</label>
-                <input
-                  type="text"
-                  value="${
-                    loan.recommended_tenor
-                      ? loan.recommended_tenor + " months"
-                      : "-"
-                  }"
-                  readonly
-                />
-              </div>
+    <h3>1. Loan Information</h3>
 
-              <div
-                class="form-group"
-                style="grid-column:1/-1;"
-              >
+    <div
+      class="form-grid"
+      style="margin-top:20px;"
+    >
 
-                <label>Recommendation</label>
+      <div class="form-group">
+        <label>Loan Code</label>
 
-                <textarea
-                  rows="3"
-                  readonly
-                >${loan.recommendation || "-"}</textarea>
+        <input
+          type="text"
+          value="${loan.loan_code || "-"}"
+          readonly
+        />
+      </div>
 
-              </div>
+      <div class="form-group">
+        <label>Loan Type</label>
 
-              <div
-                class="form-group"
-                style="grid-column:1/-1;"
-              >
+        <input
+          type="text"
+          value="${loan.loan_type || "-"}"
+          readonly
+        />
+      </div>
 
-                <label>Recommendation Reason</label>
+      <div class="form-group">
+        <label>Requested Amount</label>
 
-                <textarea
-                  rows="4"
-                  readonly
-                >${loan.recommendation_reason || "-"}</textarea>
+        <input
+          type="text"
+          value="₦${Number(
+            loan.requested_amount || 0
+          ).toLocaleString()}"
+          readonly
+        />
+      </div>
 
-              </div>
+      <div class="form-group">
+        <label>Requested Tenor</label>
 
-            </div>
+        <input
+          type="text"
+          value="${loan.requested_tenor || 0} months"
+          readonly
+        />
+      </div>
 
-          </div>
+      <div class="form-group">
+        <label>Repayment Frequency</label>
 
-        </main>
+        <input
+          type="text"
+          value="${loan.repayment_frequency || "-"}"
+          readonly
+        />
+      </div>
 
+      <div class="form-group">
+        <label>Interest Rate</label>
+
+        <input
+          type="text"
+          value="${loan.interest_rate ?? "-"}"
+          readonly
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Interest Method</label>
+
+        <input
+          type="text"
+          value="${loan.interest_method || "-"}"
+          readonly
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Grace Period</label>
+
+        <input
+          type="text"
+          value="${loan.grace_period ?? 0} days"
+          readonly
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Application Date</label>
+
+        <input
+          type="text"
+          value="${loan.application_date || "-"}"
+          readonly
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+
+        <input
+          type="text"
+          value="${loan.status || "-"}"
+          readonly
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- 2. CUSTOMER -->
+
+  <div
+    class="card"
+    id="customerSection"
+    style="margin-top:20px;"
+  >
+
+    <h3>2. Customer Information</h3>
+
+    <p style="margin-top:8px;">
+      Review the customer's KYC, personal information and credit profile.
+    </p>
+
+    <div style="margin-top:18px;">
+
+      <button
+        class="primary-btn"
+        onclick="showCustomerProfile('${loan.customer_id}')"
+      >
+        Open Customer Profile
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- 3. BUSINESS -->
+
+  <div
+    class="card"
+    id="businessSection"
+    style="margin-top:20px;"
+  >
+
+    <h3>3. Business Assessment</h3>
+
+    <p style="margin-top:8px;">
+      Review the customer's business information and operating profile.
+    </p>
+
+    <div style="
+      margin-top:18px;
+      padding:18px;
+      background:#f8f9fa;
+      border-radius:8px;
+    ">
+
+      <strong>Business assessment module</strong>
+
+      <p style="margin-top:8px;">
+        This section will contain business assessment,
+        turnover, operating expenses, profitability and
+        repayment capacity analysis.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- 4. LOAN PURPOSE -->
+
+  <div
+    class="card"
+    id="purposeSection"
+    style="margin-top:20px;"
+  >
+
+    <h3>4. Loan Purpose</h3>
+
+    <p style="margin-top:8px;">
+      Record and verify the specific purpose for which the loan is requested.
+    </p>
+
+    <div style="
+      margin-top:18px;
+      padding:18px;
+      background:#f8f9fa;
+      border-radius:8px;
+    ">
+
+      <strong>Loan purpose module</strong>
+
+      <p style="margin-top:8px;">
+        This section will be connected to the loan purpose
+        information already created in the system.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- 5. FINANCIAL ASSESSMENT -->
+
+  <div
+    class="card"
+    id="financialSection"
+    style="margin-top:20px;"
+  >
+
+    <h3>5. Financial Assessment</h3>
+
+    <p style="margin-top:8px;">
+      Assess daily sales, operating expenses, profit and repayment capacity.
+    </p>
+
+    <div style="
+      margin-top:18px;
+      padding:18px;
+      background:#f8f9fa;
+      border-radius:8px;
+    ">
+
+      <strong>Financial assessment module</strong>
+
+      <p style="margin-top:8px;">
+        Daily sales × number of business days will automatically
+        calculate the estimated monthly sales.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- 6. INVENTORY -->
+
+  <div
+    class="card"
+    id="inventorySection"
+    style="margin-top:20px;"
+  >
+
+    <h3>6. Inventory Assessment</h3>
+
+    <p style="margin-top:8px;">
+      Assess inventory level, stock movement and inventory rotation.
+    </p>
+
+    <div style="
+      margin-top:18px;
+      padding:18px;
+      background:#f8f9fa;
+      border-radius:8px;
+    ">
+
+      <strong>Inventory assessment module</strong>
+
+      <p style="margin-top:8px;">
+        Inventory rotation will be calculated automatically
+        to support the credit decision.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- 7. EXISTING LOANS -->
+
+  <div
+    class="card"
+    id="existingLoansSection"
+    style="margin-top:20px;"
+  >
+
+    <h3>7. Existing Loans & Obligations</h3>
+
+    <p style="margin-top:8px;">
+      Review existing loans, outstanding obligations and repayment history.
+    </p>
+
+    <div style="
+      margin-top:18px;
+      padding:18px;
+      background:#f8f9fa;
+      border-radius:8px;
+    ">
+
+      <strong>Existing obligations module</strong>
+
+      <p style="margin-top:8px;">
+        Existing loans and monthly repayment obligations
+        will be incorporated into the repayment capacity calculation.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- 8. GUARANTORS -->
+
+  <div
+    class="card"
+    id="guarantorSection"
+    style="margin-top:20px;"
+  >
+
+    <h3>8. Guarantors</h3>
+
+    <p style="margin-top:8px;">
+      Review guarantors attached to this loan application.
+    </p>
+
+    <div style="
+      margin-top:18px;
+      padding:18px;
+      background:#f8f9fa;
+      border-radius:8px;
+    ">
+
+      <strong>Guarantor module</strong>
+
+      <p style="margin-top:8px;">
+        Guarantor details and verification will be displayed here.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- 9. CREDIT RECOMMENDATION -->
+
+  <div
+    class="card"
+    id="recommendationSection"
+    style="margin-top:20px;"
+  >
+
+    <h3>9. Credit Recommendation</h3>
+
+    <div
+      class="form-grid"
+      style="margin-top:20px;"
+    >
+
+      <div class="form-group">
+
+        <label>Recommended Amount</label>
+
+        <input
+          type="text"
+          value="₦${Number(
+            loan.recommended_amount || 0
+          ).toLocaleString()}"
+          readonly
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Recommended Tenor</label>
+
+        <input
+          type="text"
+          value="${
+            loan.recommended_tenor
+              ? loan.recommended_tenor + " months"
+              : "-"
+          }"
+          readonly
+        />
+
+      </div>
+
+      <div
+        class="form-group"
+        style="grid-column:1/-1;"
+      >
+
+        <label>Recommendation</label>
+
+        <textarea
+          rows="3"
+          readonly
+        >${loan.recommendation || "-"}</textarea>
+
+      </div>
+
+      <div
+        class="form-group"
+        style="grid-column:1/-1;"
+      >
+
+        <label>Recommendation Reason</label>
+
+        <textarea
+          rows="4"
+          readonly
+        >${loan.recommendation_reason || "-"}</textarea>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- WORKSHEET STATUS -->
+
+  <div
+    class="card"
+    style="
+      margin-top:20px;
+      margin-bottom:40px;
+    "
+  >
+
+    <h3>Appraisal Progress</h3>
+
+    <p style="margin-top:8px;">
+      Loan application status:
+      <strong>${loan.status || "Draft"}</strong>
+    </p>
+
+    <div style="margin-top:20px;">
+
+      <button
+        class="secondary-btn"
+        onclick="showLoanApplications()"
+      >
+        Save & Return
+      </button>
+
+    </div>
+
+  </div>
+
+</main>
       </div>
     `;
 
