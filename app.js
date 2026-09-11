@@ -4834,81 +4834,91 @@ async function showLoanDetails(loanId) {
 </div>
 function calculateFinancialAssessment() {
 
-  const dailySales =
-    Number(document.getElementById("financialDailySales")?.value || 0);
+  // GET INPUT VALUES
+  const dailySales = Number(
+    document.getElementById("financialDailySales")?.value || 0
+  );
 
-  const daysOpen =
-    Number(document.getElementById("financialDaysOpen")?.value || 0);
+  const daysOpen = Number(
+    document.getElementById("financialDaysOpen")?.value || 0
+  );
 
-  const dailyCOGS =
-    Number(document.getElementById("financialDailyCOGS")?.value || 0);
+  const dailyCOGS = Number(
+    document.getElementById("financialDailyCOGS")?.value || 0
+  );
 
-  const rent =
-    Number(document.getElementById("financialRent")?.value || 0);
+  const rent = Number(
+    document.getElementById("financialRent")?.value || 0
+  );
 
-  const salaries =
-    Number(document.getElementById("financialSalaries")?.value || 0);
+  const salaries = Number(
+    document.getElementById("financialSalaries")?.value || 0
+  );
 
-  const utilities =
-    Number(document.getElementById("financialUtilities")?.value || 0);
+  const utilities = Number(
+    document.getElementById("financialUtilities")?.value || 0
+  );
 
-  const transport =
-    Number(document.getElementById("financialTransport")?.value || 0);
+  const transport = Number(
+    document.getElementById("financialTransport")?.value || 0
+  );
 
-  const otherExpenses =
-    Number(document.getElementById("financialOtherExpenses")?.value || 0);
+  const otherExpenses = Number(
+    document.getElementById("financialOtherExpenses")?.value || 0
+  );
 
-  const householdExpenses =
-    Number(
-      document.getElementById("financialHouseholdExpenses")?.value || 0
-    );
+  const householdExpenses = Number(
+    document.getElementById("financialHouseholdExpenses")?.value || 0
+  );
 
-  const existingRepayment =
-    Number(
-      document.getElementById("financialExistingRepayment")?.value || 0
-    );
+  const existingRepayment = Number(
+    document.getElementById("financialExistingRepayment")?.value || 0
+  );
 
-  const proposedRepayment =
-    Number(
-      document.getElementById("financialProposedRepayment")?.value || 0
-    );
+  const proposedRepayment = Number(
+    document.getElementById("financialProposedRepayment")?.value || 0
+  );
 
-  const totalAssets =
-    Number(
-      document.getElementById("financialTotalAssets")?.value || 0
-    );
+  const totalAssets = Number(
+    document.getElementById("financialTotalAssets")?.value || 0
+  );
 
-  const totalLiabilities =
-    Number(
-      document.getElementById("financialTotalLiabilities")?.value || 0
-    );
+  const totalLiabilities = Number(
+    document.getElementById("financialTotalLiabilities")?.value || 0
+  );
 
 
+  // =========================
   // SALES
+  // =========================
 
   const monthlySales = dailySales * daysOpen;
-
   const annualSales = monthlySales * 12;
 
 
+  // =========================
   // COST OF SALES
+  // =========================
 
   const monthlyCOGS = dailyCOGS * daysOpen;
-
   const annualCOGS = monthlyCOGS * 12;
 
 
+  // =========================
   // GROSS PROFIT
+  // =========================
 
   const grossProfit = monthlySales - monthlyCOGS;
 
   const grossMargin =
     monthlySales > 0
-      ? grossProfit / monthlySales
+      ? (grossProfit / monthlySales) * 100
       : 0;
 
 
+  // =========================
   // OPERATING EXPENSES
+  // =========================
 
   const totalOperatingExpenses =
     rent +
@@ -4918,13 +4928,17 @@ function calculateFinancialAssessment() {
     otherExpenses;
 
 
+  // =========================
   // NET BUSINESS INCOME
+  // =========================
 
   const netBusinessIncome =
     grossProfit - totalOperatingExpenses;
 
 
+  // =========================
   // NET DISPOSABLE INCOME
+  // =========================
 
   const netDisposableIncome =
     netBusinessIncome -
@@ -4932,7 +4946,9 @@ function calculateFinancialAssessment() {
     existingRepayment;
 
 
+  // =========================
   // DSCR
+  // =========================
 
   const dscr =
     proposedRepayment > 0
@@ -4940,24 +4956,31 @@ function calculateFinancialAssessment() {
       : 0;
 
 
+  // =========================
   // BALANCE SHEET
+  // =========================
 
   const netWorth =
     totalAssets - totalLiabilities;
 
-  const balanceCheck =
-    Math.abs(netWorth) >= 0;
 
+  // =========================
+  // FORMAT MONEY
+  // =========================
 
-  // DISPLAY RESULTS
+  const formatMoney = (value) => {
 
-  const formatMoney = (value) =>
-    "₦" +
-    Number(value || 0).toLocaleString("en-NG", {
+    return "₦" + Number(value || 0).toLocaleString("en-NG", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
 
+  };
+
+
+  // =========================
+  // DISPLAY RESULTS
+  // =========================
 
   const monthlySalesBox =
     document.getElementById("financialMonthlySales");
@@ -4996,50 +5019,95 @@ function calculateFinancialAssessment() {
     document.getElementById("financialBalanceCheck");
 
 
-  if (monthlySalesBox)
+  // SALES
+
+  if (monthlySalesBox) {
     monthlySalesBox.value = formatMoney(monthlySales);
+  }
 
-  if (annualSalesBox)
+  if (annualSalesBox) {
     annualSalesBox.value = formatMoney(annualSales);
+  }
 
-  if (monthlyCOGSBox)
+
+  // COGS
+
+  if (monthlyCOGSBox) {
     monthlyCOGSBox.value = formatMoney(monthlyCOGS);
+  }
 
-  if (annualCOGSBox)
+  if (annualCOGSBox) {
     annualCOGSBox.value = formatMoney(annualCOGS);
+  }
 
-  if (grossProfitBox)
+
+  // PROFIT
+
+  if (grossProfitBox) {
     grossProfitBox.value = formatMoney(grossProfit);
+  }
 
-  if (grossMarginBox)
+  if (grossMarginBox) {
     grossMarginBox.value =
-      (grossMargin * 100).toFixed(2) + "%";
+      grossMargin.toFixed(2) + "%";
+  }
 
-  if (totalExpensesBox)
+
+  // EXPENSES
+
+  if (totalExpensesBox) {
     totalExpensesBox.value =
       formatMoney(totalOperatingExpenses);
+  }
 
-  if (netBusinessIncomeBox)
+
+  // NET BUSINESS INCOME
+
+  if (netBusinessIncomeBox) {
     netBusinessIncomeBox.value =
       formatMoney(netBusinessIncome);
+  }
 
-  if (netDisposableIncomeBox)
+
+  // NET DISPOSABLE INCOME
+
+  if (netDisposableIncomeBox) {
     netDisposableIncomeBox.value =
       formatMoney(netDisposableIncome);
+  }
 
-  if (dscrBox)
+
+  // DSCR
+
+  if (dscrBox) {
     dscrBox.value =
       dscr.toFixed(2);
+  }
 
-  if (netWorthBox)
+
+  // NET WORTH
+
+  if (netWorthBox) {
     netWorthBox.value =
       formatMoney(netWorth);
+  }
 
-  if (balanceCheckBox)
-    balanceCheckBox.value =
-      "Calculated";
+
+  // BALANCE CHECK
+  // Temporary display only.
+  // We will improve the balance-sheet structure later.
+
+  if (balanceCheckBox) {
+
+    if (totalAssets > 0 || totalLiabilities > 0) {
+      balanceCheckBox.value = "Calculated";
+    } else {
+      balanceCheckBox.value = "Not Checked";
+    }
+
+  }
+
 }
-
   <!-- 6. INVENTORY -->
 
   <div
