@@ -4258,8 +4258,6 @@ async function showLoanDetails(loanId) {
 
   <!-- 4. LOAN PURPOSE -->
 
-  <!-- 4. LOAN PURPOSE -->
-
 <div
   class="card"
   id="purposeSection"
