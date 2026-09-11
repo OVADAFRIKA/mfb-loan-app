@@ -4786,6 +4786,16 @@ async function saveBusinessAssessmentFromWorksheet(
 }
 async function saveLoanPurposeAssessment(loanId) {
   try {
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
     const purposeDescription =
       document.getElementById("appraisalPurposeDescription")?.value.trim() || "";
 
@@ -4803,97 +4813,101 @@ async function saveLoanPurposeAssessment(loanId) {
 
     if (!loanId) {
       if (message) {
-        message.innerHTML =
-          '<span style="color:#dc2626;">Loan application ID is missing.</span>';
+        message.innerHTML = `
+          <div style="
+            padding:12px;
+            background:#fdecec;
+            border-radius:6px;
+          ">
+            <strong>Loan application ID is missing.</strong>
+          </div>
+        `;
       }
       return;
     }
 
-    const { data: existingPurpose, error: findError } = await supabase
-      .from("loan_purposes")
-      .select("*")
-      .eq("loan_application_id", loanId)
-      .maybeSingle();
+    const { data: existingPurpose, error: findError } =
+      await supabaseClient
+        .from("loan_purposes")
+        .select("*")
+        .eq("loan_application_id", loanId)
+        .maybeSingle();
 
     if (findError) {
-      console.error("Error finding loan purpose:", findError);
-
-      if (message) {
-        message.innerHTML =
-          '<span style="color:#dc2626;">Unable to find the loan purpose record.</span>';
-      }
-
-      return;
+      throw findError;
     }
 
     if (existingPurpose) {
-      const { error: updateError } = await supabase
-        .from("loan_purposes")
-        .update({
-          description: purposeDescription,
-          use_of_funds: useOfFunds,
-          officer_assessment: officerAssessment,
-          verification_comments: verificationComments
-        })
-        .eq("id", existingPurpose.id);
+
+      const { error: updateError } =
+        await supabaseClient
+          .from("loan_purposes")
+          .update({
+            description: purposeDescription,
+            use_of_funds: useOfFunds,
+            officer_assessment: officerAssessment,
+            verification_comments: verificationComments
+          })
+          .eq("id", existingPurpose.id);
 
       if (updateError) {
-        console.error("Error updating loan purpose:", updateError);
-
-        if (message) {
-          message.innerHTML =
-            '<span style="color:#dc2626;">Error saving loan purpose assessment: ' +
-            updateError.message +
-            "</span>";
-        }
-
-        return;
+        throw updateError;
       }
 
     } else {
 
-      const { error: insertError } = await supabase
-        .from("loan_purposes")
-        .insert({
-          loan_application_id: loanId,
-          purpose: "",
-          amount_required: 0,
-          description: purposeDescription,
-          use_of_funds: useOfFunds,
-          officer_assessment: officerAssessment,
-          verification_comments: verificationComments
-        });
+      const { error: insertError } =
+        await supabaseClient
+          .from("loan_purposes")
+          .insert([{
+            loan_application_id: loanId,
+            purpose: "",
+            amount_required: 0,
+            description: purposeDescription,
+            use_of_funds: useOfFunds,
+            officer_assessment: officerAssessment,
+            verification_comments: verificationComments
+          }]);
 
       if (insertError) {
-        console.error("Error creating loan purpose:", insertError);
-
-        if (message) {
-          message.innerHTML =
-            '<span style="color:#dc2626;">Error saving loan purpose assessment: ' +
-            insertError.message +
-            "</span>";
-        }
-
-        return;
+        throw insertError;
       }
     }
 
     if (message) {
-      message.innerHTML =
-        '<span style="color:#16a34a;font-weight:600;">' +
-        "Loan purpose assessment saved successfully." +
-        "</span>";
+      message.innerHTML = `
+        <div style="
+          padding:12px;
+          background:#eaf7ee;
+          border-radius:6px;
+        ">
+          <strong>Loan purpose assessment saved successfully.</strong>
+        </div>
+      `;
     }
 
   } catch (error) {
-    console.error("Unexpected error saving loan purpose:", error);
+
+    console.error(
+      "Loan Purpose Assessment error:",
+      error
+    );
 
     const message =
       document.getElementById("loanPurposeAssessmentMessage");
 
     if (message) {
-      message.innerHTML =
-        '<span style="color:#dc2626;">An unexpected error occurred while saving.</span>';
+      message.innerHTML = `
+        <div style="
+          padding:12px;
+          background:#fdecec;
+          border-radius:6px;
+        ">
+          <strong>Unable to save loan purpose assessment.</strong>
+          <br>
+          ${error.message}
+        </div>
+      `;
     }
   }
 }
