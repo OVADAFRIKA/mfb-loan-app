@@ -4063,37 +4063,198 @@ async function showLoanDetails(loanId) {
 
   <!-- 3. BUSINESS -->
 
-  <div
-    class="card"
-    id="businessSection"
-    style="margin-top:20px;"
-  >
+  <!-- 3. BUSINESS ASSESSMENT -->
 
-    <h3>3. Business Assessment</h3>
+<div
+  class="card"
+  id="businessSection"
+  style="margin-top:20px;"
+>
 
-    <p style="margin-top:8px;">
-      Review the customer's business information and operating profile.
-    </p>
+  <h3>3. Business Assessment</h3>
+
+  <p style="margin-top:8px;">
+    Assess the customer's business operations, premises and operating profile.
+  </p>
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      Business Information
+    </h4>
 
     <div style="
-      margin-top:18px;
-      padding:18px;
-      background:#f8f9fa;
-      border-radius:8px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
     ">
 
-      <strong>Business assessment module</strong>
+      <div>
+        <label>Business Name</label>
+        <input
+          type="text"
+          id="appraisalBusinessName"
+          placeholder="Enter business name"
+        />
+      </div>
 
-      <p style="margin-top:8px;">
-        This section will contain business assessment,
-        turnover, operating expenses, profitability and
-        repayment capacity analysis.
-      </p>
+      <div>
+        <label>Nature of Business</label>
+        <input
+          type="text"
+          id="appraisalNatureOfBusiness"
+          placeholder="Enter nature of business"
+        />
+      </div>
+
+      <div>
+        <label>Business Type</label>
+        <select id="appraisalBusinessType">
+          <option value="">Select business type</option>
+          <option value="Sole Proprietorship">Sole Proprietorship</option>
+          <option value="Partnership">Partnership</option>
+          <option value="Limited Liability Company">Limited Liability Company</option>
+          <option value="Cooperative">Cooperative</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Sector</label>
+        <input
+          type="text"
+          id="appraisalBusinessSector"
+          placeholder="Enter business sector"
+        />
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label>Business Address</label>
+        <textarea
+          id="appraisalBusinessAddress"
+          rows="2"
+          placeholder="Enter business address"
+        ></textarea>
+      </div>
+
+      <div>
+        <label>State</label>
+        <input
+          type="text"
+          id="appraisalBusinessState"
+          placeholder="Enter state"
+        />
+      </div>
+
+      <div>
+        <label>LGA</label>
+        <input
+          type="text"
+          id="appraisalBusinessLGA"
+          placeholder="Enter LGA"
+        />
+      </div>
+
+      <div>
+        <label>Landmark</label>
+        <input
+          type="text"
+          id="appraisalBusinessLandmark"
+          placeholder="Enter landmark"
+        />
+      </div>
+
+      <div>
+        <label>Date Business Started</label>
+        <input
+          type="date"
+          id="appraisalBusinessStartDate"
+        />
+      </div>
+
+      <div>
+        <label>Premises Status</label>
+        <select id="appraisalPremisesStatus">
+          <option value="">Select premises status</option>
+          <option value="Owned">Owned</option>
+          <option value="Rented">Rented</option>
+          <option value="Leased">Leased</option>
+          <option value="Family Property">Family Property</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Time at Current Premises</label>
+        <input
+          type="text"
+          id="appraisalTimeAtPremises"
+          placeholder="e.g. 3 years"
+        />
+      </div>
+
+      <div>
+        <label>Number of Employees</label>
+        <input
+          type="number"
+          id="appraisalNumberEmployees"
+          min="0"
+          placeholder="0"
+        />
+      </div>
+
+      <div>
+        <label>Number of Business Locations</label>
+        <input
+          type="number"
+          id="appraisalNumberLocations"
+          min="1"
+          value="1"
+        />
+      </div>
 
     </div>
 
+    <div style="
+      margin-top:20px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    ">
+
+      <button
+        class="primary-btn"
+        onclick="saveBusinessAssessmentFromWorksheet(
+          '${loan.customer_id}',
+          '${loan.business_id || ""}',
+          '${loan.id}'
+        )"
+      >
+        Save Business Assessment
+      </button>
+
+      <button
+        class="secondary-btn"
+        onclick="showBusiness('${loan.customer_id}')"
+      >
+        Open Business Profile
+      </button>
+
+    </div>
+
+    <div
+      id="businessAssessmentMessage"
+      style="margin-top:15px;"
+    ></div>
+
   </div>
 
+</div>
 
   <!-- 4. LOAN PURPOSE -->
 
@@ -4397,5 +4558,146 @@ async function showLoanDetails(loanId) {
 
       </div>
     `;
+  }
+}
+async function saveBusinessAssessmentFromWorksheet(
+  customerId,
+  businessId,
+  loanId
+) {
+  try {
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const messageBox =
+      document.getElementById("businessAssessmentMessage");
+
+    const businessName =
+      document.getElementById("appraisalBusinessName")?.value.trim();
+
+    if (!businessName) {
+      messageBox.innerHTML = `
+        <p style="color:#b00020;">
+          Please enter the business name.
+        </p>
+      `;
+      return;
+    }
+
+    const businessData = {
+      customer_id: customerId,
+      business_name: businessName,
+      nature_of_business:
+        document.getElementById("appraisalNatureOfBusiness")?.value.trim() || null,
+      business_type:
+        document.getElementById("appraisalBusinessType")?.value || null,
+      sector:
+        document.getElementById("appraisalBusinessSector")?.value.trim() || null,
+      business_address:
+        document.getElementById("appraisalBusinessAddress")?.value.trim() || null,
+      state:
+        document.getElementById("appraisalBusinessState")?.value.trim() || null,
+      lga:
+        document.getElementById("appraisalBusinessLGA")?.value.trim() || null,
+      landmark:
+        document.getElementById("appraisalBusinessLandmark")?.value.trim() || null,
+      date_business_started:
+        document.getElementById("appraisalBusinessStartDate")?.value || null,
+      premises_status:
+        document.getElementById("appraisalPremisesStatus")?.value || null,
+      time_at_current_premises:
+        document.getElementById("appraisalTimeAtPremises")?.value.trim() || null,
+      number_of_employees:
+        Number(
+          document.getElementById("appraisalNumberEmployees")?.value || 0
+        ),
+      number_of_locations:
+        Number(
+          document.getElementById("appraisalNumberLocations")?.value || 1
+        ),
+      created_by: session.user.id
+    };
+
+    if (businessId) {
+
+      const { error } =
+        await supabaseClient
+          .from("businesses")
+          .update(businessData)
+          .eq("id", businessId);
+
+      if (error) {
+        throw error;
+      }
+
+    } else {
+
+      const { data, error } =
+        await supabaseClient
+          .from("businesses")
+          .insert([businessData])
+          .select()
+          .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.id && loanId) {
+
+        const { error: loanError } =
+          await supabaseClient
+            .from("loan_applications")
+            .update({
+              business_id: data.id
+            })
+            .eq("id", loanId);
+
+        if (loanError) {
+          throw loanError;
+        }
+      }
+    }
+
+    messageBox.innerHTML = `
+      <div style="
+        padding:12px;
+        background:#eaf7ee;
+        border-radius:6px;
+      ">
+        <strong>Business assessment saved successfully.</strong>
+      </div>
+    `;
+
+  } catch (error) {
+
+    console.error(
+      "Business Assessment error:",
+      error
+    );
+
+    const messageBox =
+      document.getElementById("businessAssessmentMessage");
+
+    if (messageBox) {
+      messageBox.innerHTML = `
+        <div style="
+          padding:12px;
+          background:#fdecec;
+          border-radius:6px;
+        ">
+          <strong>Unable to save business assessment.</strong>
+          <br>
+          ${error.message}
+        </div>
+      `;
+    }
   }
 }
