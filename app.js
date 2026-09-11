@@ -4832,7 +4832,213 @@ async function showLoanDetails(loanId) {
   ></div>
 
 </div>
+function calculateFinancialAssessment() {
 
+  const dailySales =
+    Number(document.getElementById("financialDailySales")?.value || 0);
+
+  const daysOpen =
+    Number(document.getElementById("financialDaysOpen")?.value || 0);
+
+  const dailyCOGS =
+    Number(document.getElementById("financialDailyCOGS")?.value || 0);
+
+  const rent =
+    Number(document.getElementById("financialRent")?.value || 0);
+
+  const salaries =
+    Number(document.getElementById("financialSalaries")?.value || 0);
+
+  const utilities =
+    Number(document.getElementById("financialUtilities")?.value || 0);
+
+  const transport =
+    Number(document.getElementById("financialTransport")?.value || 0);
+
+  const otherExpenses =
+    Number(document.getElementById("financialOtherExpenses")?.value || 0);
+
+  const householdExpenses =
+    Number(
+      document.getElementById("financialHouseholdExpenses")?.value || 0
+    );
+
+  const existingRepayment =
+    Number(
+      document.getElementById("financialExistingRepayment")?.value || 0
+    );
+
+  const proposedRepayment =
+    Number(
+      document.getElementById("financialProposedRepayment")?.value || 0
+    );
+
+  const totalAssets =
+    Number(
+      document.getElementById("financialTotalAssets")?.value || 0
+    );
+
+  const totalLiabilities =
+    Number(
+      document.getElementById("financialTotalLiabilities")?.value || 0
+    );
+
+
+  // SALES
+
+  const monthlySales = dailySales * daysOpen;
+
+  const annualSales = monthlySales * 12;
+
+
+  // COST OF SALES
+
+  const monthlyCOGS = dailyCOGS * daysOpen;
+
+  const annualCOGS = monthlyCOGS * 12;
+
+
+  // GROSS PROFIT
+
+  const grossProfit = monthlySales - monthlyCOGS;
+
+  const grossMargin =
+    monthlySales > 0
+      ? grossProfit / monthlySales
+      : 0;
+
+
+  // OPERATING EXPENSES
+
+  const totalOperatingExpenses =
+    rent +
+    salaries +
+    utilities +
+    transport +
+    otherExpenses;
+
+
+  // NET BUSINESS INCOME
+
+  const netBusinessIncome =
+    grossProfit - totalOperatingExpenses;
+
+
+  // NET DISPOSABLE INCOME
+
+  const netDisposableIncome =
+    netBusinessIncome -
+    householdExpenses -
+    existingRepayment;
+
+
+  // DSCR
+
+  const dscr =
+    proposedRepayment > 0
+      ? netDisposableIncome / proposedRepayment
+      : 0;
+
+
+  // BALANCE SHEET
+
+  const netWorth =
+    totalAssets - totalLiabilities;
+
+  const balanceCheck =
+    Math.abs(netWorth) >= 0;
+
+
+  // DISPLAY RESULTS
+
+  const formatMoney = (value) =>
+    "₦" +
+    Number(value || 0).toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+
+  const monthlySalesBox =
+    document.getElementById("financialMonthlySales");
+
+  const annualSalesBox =
+    document.getElementById("financialAnnualSales");
+
+  const monthlyCOGSBox =
+    document.getElementById("financialMonthlyCOGS");
+
+  const annualCOGSBox =
+    document.getElementById("financialAnnualCOGS");
+
+  const grossProfitBox =
+    document.getElementById("financialGrossProfit");
+
+  const grossMarginBox =
+    document.getElementById("financialGrossMargin");
+
+  const totalExpensesBox =
+    document.getElementById("financialTotalExpenses");
+
+  const netBusinessIncomeBox =
+    document.getElementById("financialNetBusinessIncome");
+
+  const netDisposableIncomeBox =
+    document.getElementById("financialNetDisposableIncome");
+
+  const dscrBox =
+    document.getElementById("financialDSCR");
+
+  const netWorthBox =
+    document.getElementById("financialNetWorth");
+
+  const balanceCheckBox =
+    document.getElementById("financialBalanceCheck");
+
+
+  if (monthlySalesBox)
+    monthlySalesBox.value = formatMoney(monthlySales);
+
+  if (annualSalesBox)
+    annualSalesBox.value = formatMoney(annualSales);
+
+  if (monthlyCOGSBox)
+    monthlyCOGSBox.value = formatMoney(monthlyCOGS);
+
+  if (annualCOGSBox)
+    annualCOGSBox.value = formatMoney(annualCOGS);
+
+  if (grossProfitBox)
+    grossProfitBox.value = formatMoney(grossProfit);
+
+  if (grossMarginBox)
+    grossMarginBox.value =
+      (grossMargin * 100).toFixed(2) + "%";
+
+  if (totalExpensesBox)
+    totalExpensesBox.value =
+      formatMoney(totalOperatingExpenses);
+
+  if (netBusinessIncomeBox)
+    netBusinessIncomeBox.value =
+      formatMoney(netBusinessIncome);
+
+  if (netDisposableIncomeBox)
+    netDisposableIncomeBox.value =
+      formatMoney(netDisposableIncome);
+
+  if (dscrBox)
+    dscrBox.value =
+      dscr.toFixed(2);
+
+  if (netWorthBox)
+    netWorthBox.value =
+      formatMoney(netWorth);
+
+  if (balanceCheckBox)
+    balanceCheckBox.value =
+      "Calculated";
+}
 
   <!-- 6. INVENTORY -->
 
