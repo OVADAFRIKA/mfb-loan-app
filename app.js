@@ -4258,36 +4258,121 @@ async function showLoanDetails(loanId) {
 
   <!-- 4. LOAN PURPOSE -->
 
-  <div
-    class="card"
-    id="purposeSection"
-    style="margin-top:20px;"
-  >
+  <!-- 4. LOAN PURPOSE -->
 
-    <h3>4. Loan Purpose</h3>
+<div
+  class="card"
+  id="purposeSection"
+  style="margin-top:20px;"
+>
 
-    <p style="margin-top:8px;">
-      Record and verify the specific purpose for which the loan is requested.
-    </p>
+  <h3>4. Loan Purpose</h3>
+
+  <p style="margin-top:8px;">
+    Review the purpose of the loan and assess how the requested funds
+    will be applied to the customer's business.
+  </p>
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      Loan Purpose Information
+    </h4>
 
     <div style="
-      margin-top:18px;
-      padding:18px;
-      background:#f8f9fa;
-      border-radius:8px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
     ">
 
-      <strong>Loan purpose module</strong>
+      <div>
+        <label>Loan Purpose</label>
+        <input
+          type="text"
+          id="appraisalLoanPurpose"
+          value="${loan.loan_purpose_types?.name || ""}"
+          readonly
+        />
+      </div>
 
-      <p style="margin-top:8px;">
-        This section will be connected to the loan purpose
-        information already created in the system.
-      </p>
+      <div>
+        <label>Requested Loan Amount</label>
+        <input
+          type="text"
+          value="₦${Number(
+            loan.requested_amount || 0
+          ).toLocaleString()}"
+          readonly
+        />
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label>Purpose Description</label>
+        <textarea
+          id="appraisalPurposeDescription"
+          rows="3"
+          placeholder="Describe specifically how the loan will be used."
+        >${loan.loan_purpose_types?.description || ""}</textarea>
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label>Detailed Use of Funds</label>
+        <textarea
+          id="appraisalUseOfFunds"
+          rows="4"
+          placeholder="Explain how the customer intends to deploy the loan proceeds."
+        ></textarea>
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label>Loan Officer Purpose Assessment</label>
+        <textarea
+          id="appraisalPurposeAssessment"
+          rows="4"
+          placeholder="Assess whether the stated purpose is reasonable, viable and consistent with the customer's business."
+        ></textarea>
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label>Purpose Verification / Comments</label>
+        <textarea
+          id="appraisalPurposeComments"
+          rows="3"
+          placeholder="Enter verification findings or other relevant comments."
+        ></textarea>
+      </div>
 
     </div>
 
+    <div style="
+      margin-top:20px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    ">
+
+      <button
+        class="primary-btn"
+        onclick="saveLoanPurposeAssessment('${loan.id}')"
+      >
+        Save Loan Purpose Assessment
+      </button>
+
+    </div>
+
+    <div
+      id="loanPurposeAssessmentMessage"
+      style="margin-top:15px;"
+    ></div>
+
   </div>
 
+</div>
 
   <!-- 5. FINANCIAL ASSESSMENT -->
 
