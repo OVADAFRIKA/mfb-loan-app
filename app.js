@@ -4372,37 +4372,466 @@ async function showLoanDetails(loanId) {
 
 </div>
 
-  <!-- 5. FINANCIAL ASSESSMENT -->
+ <!-- 5. FINANCIAL ASSESSMENT -->
 
-  <div
-    class="card"
-    id="financialSection"
-    style="margin-top:20px;"
-  >
+<div
+  class="card"
+  id="financialSection"
+  style="margin-top:20px;"
+>
 
-    <h3>5. Financial Assessment</h3>
+  <h3>5. Financial Assessment</h3>
 
-    <p style="margin-top:8px;">
-      Assess daily sales, operating expenses, profit and repayment capacity.
-    </p>
+  <p style="margin-top:8px;">
+    Assess sales, cost of sales, operating expenses, profitability,
+    repayment capacity and financial position.
+  </p>
+
+  <!-- SALES / REVENUE -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      A. Sales / Revenue
+    </h4>
 
     <div style="
-      margin-top:18px;
-      padding:18px;
-      background:#f8f9fa;
-      border-radius:8px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
     ">
 
-      <strong>Financial assessment module</strong>
+      <div>
+        <label>Average Daily Sales</label>
+        <input
+          type="number"
+          id="financialDailySales"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
 
-      <p style="margin-top:8px;">
-        Daily sales × number of business days will automatically
-        calculate the estimated monthly sales.
-      </p>
+      <div>
+        <label>Days Open per Month</label>
+        <input
+          type="number"
+          id="financialDaysOpen"
+          min="0"
+          max="31"
+          step="1"
+          placeholder="26"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Estimated Monthly Sales</label>
+        <input
+          type="text"
+          id="financialMonthlySales"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+      <div>
+        <label>Estimated Annual Sales</label>
+        <input
+          type="text"
+          id="financialAnnualSales"
+          value="₦0"
+          readonly
+        />
+      </div>
 
     </div>
 
   </div>
+
+
+  <!-- COST OF SALES -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      B. Cost of Sales
+    </h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
+    ">
+
+      <div>
+        <label>Average Daily Cost of Goods Sold</label>
+        <input
+          type="number"
+          id="financialDailyCOGS"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Monthly Cost of Goods Sold</label>
+        <input
+          type="text"
+          id="financialMonthlyCOGS"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+      <div>
+        <label>Annual Cost of Goods Sold</label>
+        <input
+          type="text"
+          id="financialAnnualCOGS"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+      <div>
+        <label>Gross Profit</label>
+        <input
+          type="text"
+          id="financialGrossProfit"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+      <div>
+        <label>Gross Margin</label>
+        <input
+          type="text"
+          id="financialGrossMargin"
+          value="0.00%"
+          readonly
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- OPERATING EXPENSES -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      C. Operating Expenses
+    </h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
+    ">
+
+      <div>
+        <label>Rent / Premises Expense</label>
+        <input
+          type="number"
+          id="financialRent"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Salaries / Wages</label>
+        <input
+          type="number"
+          id="financialSalaries"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Utilities</label>
+        <input
+          type="number"
+          id="financialUtilities"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Transport</label>
+        <input
+          type="number"
+          id="financialTransport"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Other Operating Expenses</label>
+        <input
+          type="number"
+          id="financialOtherExpenses"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Total Operating Expenses</label>
+        <input
+          type="text"
+          id="financialTotalExpenses"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- PROFITABILITY -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      D. Profitability
+    </h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
+    ">
+
+      <div>
+        <label>Net Business Income</label>
+        <input
+          type="text"
+          id="financialNetBusinessIncome"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- HOUSEHOLD & EXISTING OBLIGATIONS -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      E. Household Expenses & Existing Obligations
+    </h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
+    ">
+
+      <div>
+        <label>Total Monthly Household Expenses</label>
+        <input
+          type="number"
+          id="financialHouseholdExpenses"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Total Existing Monthly Loan Repayment</label>
+        <input
+          type="number"
+          id="financialExistingRepayment"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Net Disposable Income</label>
+        <input
+          type="text"
+          id="financialNetDisposableIncome"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+      <div>
+        <label>Proposed Loan Repayment</label>
+        <input
+          type="number"
+          id="financialProposedRepayment"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>DSCR</label>
+        <input
+          type="text"
+          id="financialDSCR"
+          value="0.00"
+          readonly
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- BALANCE SHEET -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4 style="margin-bottom:16px;">
+      F. Balance Sheet
+    </h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
+    ">
+
+      <div>
+        <label>Total Assets</label>
+        <input
+          type="number"
+          id="financialTotalAssets"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Total Liabilities</label>
+        <input
+          type="number"
+          id="financialTotalLiabilities"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateFinancialAssessment()"
+        />
+      </div>
+
+      <div>
+        <label>Net Worth</label>
+        <input
+          type="text"
+          id="financialNetWorth"
+          value="₦0"
+          readonly
+        />
+      </div>
+
+      <div>
+        <label>Balance Check</label>
+        <input
+          type="text"
+          id="financialBalanceCheck"
+          value="Not Checked"
+          readonly
+        />
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- SAVE -->
+
+  <div style="
+    margin-top:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  ">
+
+    <button
+      class="primary-btn"
+      onclick="saveFinancialAssessment('${loan.id}')"
+    >
+      Save Financial Assessment
+    </button>
+
+  </div>
+
+  <div
+    id="financialAssessmentMessage"
+    style="margin-top:15px;"
+  ></div>
+
+</div>
 
 
   <!-- 6. INVENTORY -->
