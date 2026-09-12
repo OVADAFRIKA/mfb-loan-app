@@ -4387,7 +4387,8 @@ async function showLoanDetails(loanId) {
     repayment capacity and financial position.
   </p>
 
-  <!-- SALES / REVENUE -->
+
+  <!-- A. SALES / REVENUE -->
 
   <div style="
     margin-top:18px;
@@ -4414,7 +4415,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4427,7 +4428,7 @@ async function showLoanDetails(loanId) {
           max="31"
           step="1"
           placeholder="26"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4436,7 +4437,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialMonthlySales"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4446,7 +4447,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialAnnualSales"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4456,7 +4457,7 @@ async function showLoanDetails(loanId) {
   </div>
 
 
-  <!-- COST OF SALES -->
+  <!-- B. COST OF SALES -->
 
   <div style="
     margin-top:18px;
@@ -4483,7 +4484,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4492,7 +4493,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialMonthlyCOGS"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4502,7 +4503,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialAnnualCOGS"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4512,7 +4513,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialGrossProfit"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4532,7 +4533,7 @@ async function showLoanDetails(loanId) {
   </div>
 
 
-  <!-- OPERATING EXPENSES -->
+  <!-- C. OPERATING EXPENSES -->
 
   <div style="
     margin-top:18px;
@@ -4559,7 +4560,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4571,7 +4572,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4583,7 +4584,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4595,7 +4596,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4607,7 +4608,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4616,7 +4617,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialTotalExpenses"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4626,7 +4627,7 @@ async function showLoanDetails(loanId) {
   </div>
 
 
-  <!-- PROFITABILITY -->
+  <!-- D. PROFITABILITY -->
 
   <div style="
     margin-top:18px;
@@ -4650,7 +4651,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialNetBusinessIncome"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4660,7 +4661,7 @@ async function showLoanDetails(loanId) {
   </div>
 
 
-  <!-- HOUSEHOLD & EXISTING OBLIGATIONS -->
+  <!-- E. HOUSEHOLD EXPENSES & EXISTING OBLIGATIONS -->
 
   <div style="
     margin-top:18px;
@@ -4687,7 +4688,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4699,7 +4700,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4708,7 +4709,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialNetDisposableIncome"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4721,7 +4722,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4740,7 +4741,7 @@ async function showLoanDetails(loanId) {
   </div>
 
 
-  <!-- BALANCE SHEET -->
+  <!-- F. BALANCE SHEET -->
 
   <div style="
     margin-top:18px;
@@ -4767,7 +4768,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4779,7 +4780,7 @@ async function showLoanDetails(loanId) {
           min="0"
           step="0.01"
           placeholder="0"
-          oninput="calculateFinancialAssessment()"
+          oninput="window.calculateFinancialAssessment()"
         />
       </div>
 
@@ -4788,7 +4789,7 @@ async function showLoanDetails(loanId) {
         <input
           type="text"
           id="financialNetWorth"
-          value="₦0"
+          value="₦0.00"
           readonly
         />
       </div>
@@ -4826,226 +4827,12 @@ async function showLoanDetails(loanId) {
 
   </div>
 
-    <div
+  <div
     id="financialAssessmentMessage"
     style="margin-top:15px;"
   ></div>
 
-</div>
-
-}
-}
-function calculateFinancialAssessment() {
-
-  const dailySales =
-    Number(document.getElementById("financialDailySales")?.value || 0);
-
-  const daysOpen =
-    Number(document.getElementById("financialDaysOpen")?.value || 0);
-
-  const dailyCOGS =
-    Number(document.getElementById("financialDailyCOGS")?.value || 0);
-
-  const rent =
-    Number(document.getElementById("financialRent")?.value || 0);
-
-  const salaries =
-    Number(document.getElementById("financialSalaries")?.value || 0);
-
-  const utilities =
-    Number(document.getElementById("financialUtilities")?.value || 0);
-
-  const transport =
-    Number(document.getElementById("financialTransport")?.value || 0);
-
-  const otherExpenses =
-    Number(document.getElementById("financialOtherExpenses")?.value || 0);
-
-  const householdExpenses =
-    Number(document.getElementById("financialHouseholdExpenses")?.value || 0);
-
-  const existingRepayment =
-    Number(document.getElementById("financialExistingRepayment")?.value || 0);
-
-  const proposedRepayment =
-    Number(document.getElementById("financialProposedRepayment")?.value || 0);
-
-  const totalAssets =
-    Number(document.getElementById("financialTotalAssets")?.value || 0);
-
-  const totalLiabilities =
-    Number(document.getElementById("financialTotalLiabilities")?.value || 0);
-
-
-  // SALES
-
-  const monthlySales = dailySales * daysOpen;
-  const annualSales = monthlySales * 12;
-
-
-  // COST OF SALES
-
-  const monthlyCOGS = dailyCOGS * daysOpen;
-  const annualCOGS = monthlyCOGS * 12;
-
-
-  // GROSS PROFIT
-
-  const grossProfit = monthlySales - monthlyCOGS;
-
-  const grossMargin =
-    monthlySales > 0
-      ? (grossProfit / monthlySales) * 100
-      : 0;
-
-
-  // OPERATING EXPENSES
-
-  const totalOperatingExpenses =
-    rent +
-    salaries +
-    utilities +
-    transport +
-    otherExpenses;
-
-
-  // NET BUSINESS INCOME
-
-  const netBusinessIncome =
-    grossProfit - totalOperatingExpenses;
-
-
-  // NET DISPOSABLE INCOME
-
-  const netDisposableIncome =
-    netBusinessIncome -
-    householdExpenses -
-    existingRepayment;
-
-
-  // DSCR
-
-  const dscr =
-    proposedRepayment > 0
-      ? netDisposableIncome / proposedRepayment
-      : 0;
-
-
-  // BALANCE SHEET
-
-  const netWorth =
-    totalAssets - totalLiabilities;
-
-
-  // FORMAT MONEY
-
-  const formatMoney = (value) => {
-    return "₦" + Number(value || 0).toLocaleString("en-NG", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
-
-
-  // DISPLAY RESULTS
-
-  const monthlySalesBox =
-    document.getElementById("financialMonthlySales");
-
-  const annualSalesBox =
-    document.getElementById("financialAnnualSales");
-
-  const monthlyCOGSBox =
-    document.getElementById("financialMonthlyCOGS");
-
-  const annualCOGSBox =
-    document.getElementById("financialAnnualCOGS");
-
-  const grossProfitBox =
-    document.getElementById("financialGrossProfit");
-
-  const grossMarginBox =
-    document.getElementById("financialGrossMargin");
-
-  const totalExpensesBox =
-    document.getElementById("financialTotalExpenses");
-
-  const netBusinessIncomeBox =
-    document.getElementById("financialNetBusinessIncome");
-
-  const netDisposableIncomeBox =
-    document.getElementById("financialNetDisposableIncome");
-
-  const dscrBox =
-    document.getElementById("financialDSCR");
-
-  const netWorthBox =
-    document.getElementById("financialNetWorth");
-
-  const balanceCheckBox =
-    document.getElementById("financialBalanceCheck");
-
-
-  if (monthlySalesBox) {
-    monthlySalesBox.value = formatMoney(monthlySales);
-  }
-
-  if (annualSalesBox) {
-    annualSalesBox.value = formatMoney(annualSales);
-  }
-
-  if (monthlyCOGSBox) {
-    monthlyCOGSBox.value = formatMoney(monthlyCOGS);
-  }
-
-  if (annualCOGSBox) {
-    annualCOGSBox.value = formatMoney(annualCOGS);
-  }
-
-  if (grossProfitBox) {
-    grossProfitBox.value = formatMoney(grossProfit);
-  }
-
-  if (grossMarginBox) {
-    grossMarginBox.value =
-      grossMargin.toFixed(2) + "%";
-  }
-
-  if (totalExpensesBox) {
-    totalExpensesBox.value =
-      formatMoney(totalOperatingExpenses);
-  }
-
-  if (netBusinessIncomeBox) {
-    netBusinessIncomeBox.value =
-      formatMoney(netBusinessIncome);
-  }
-
-  if (netDisposableIncomeBox) {
-    netDisposableIncomeBox.value =
-      formatMoney(netDisposableIncome);
-  }
-
-  if (dscrBox) {
-    dscrBox.value =
-      dscr.toFixed(2);
-  }
-
-  if (netWorthBox) {
-    netWorthBox.value =
-      formatMoney(netWorth);
-  }
-
-  if (balanceCheckBox) {
-    if (totalAssets > 0 || totalLiabilities > 0) {
-      balanceCheckBox.value = "Calculated";
-    } else {
-      balanceCheckBox.value = "Not Checked";
-    }
-  }
-
-}
-  <!-- 6. INVENTORY -->
+</div>  <!-- 6. INVENTORY -->
 
   <div
     class="card"
@@ -5551,3 +5338,251 @@ async function saveLoanPurposeAssessment(loanId) {
     }
   }
 }
+window.calculateFinancialAssessment = function () {
+
+  const getNumber = (id) => {
+    const element = document.getElementById(id);
+
+    if (!element) {
+      return 0;
+    }
+
+    return Number(element.value) || 0;
+  };
+
+
+  // =========================
+  // INPUTS
+  // =========================
+
+  const dailySales =
+    getNumber("financialDailySales");
+
+  const daysOpen =
+    getNumber("financialDaysOpen");
+
+  const dailyCOGS =
+    getNumber("financialDailyCOGS");
+
+  const rent =
+    getNumber("financialRent");
+
+  const salaries =
+    getNumber("financialSalaries");
+
+  const utilities =
+    getNumber("financialUtilities");
+
+  const transport =
+    getNumber("financialTransport");
+
+  const otherExpenses =
+    getNumber("financialOtherExpenses");
+
+  const householdExpenses =
+    getNumber("financialHouseholdExpenses");
+
+  const existingRepayment =
+    getNumber("financialExistingRepayment");
+
+  const proposedRepayment =
+    getNumber("financialProposedRepayment");
+
+  const totalAssets =
+    getNumber("financialTotalAssets");
+
+  const totalLiabilities =
+    getNumber("financialTotalLiabilities");
+
+
+  // =========================
+  // SALES
+  // =========================
+
+  const monthlySales =
+    dailySales * daysOpen;
+
+  const annualSales =
+    monthlySales * 12;
+
+
+  // =========================
+  // COST OF SALES
+  // =========================
+
+  const monthlyCOGS =
+    dailyCOGS * daysOpen;
+
+  const annualCOGS =
+    monthlyCOGS * 12;
+
+
+  // =========================
+  // GROSS PROFIT
+  // =========================
+
+  const grossProfit =
+    monthlySales - monthlyCOGS;
+
+  const grossMargin =
+    monthlySales > 0
+      ? (grossProfit / monthlySales) * 100
+      : 0;
+
+
+  // =========================
+  // OPERATING EXPENSES
+  // =========================
+
+  const totalOperatingExpenses =
+    rent +
+    salaries +
+    utilities +
+    transport +
+    otherExpenses;
+
+
+  // =========================
+  // NET BUSINESS INCOME
+  // =========================
+
+  const netBusinessIncome =
+    grossProfit -
+    totalOperatingExpenses;
+
+
+  // =========================
+  // NET DISPOSABLE INCOME
+  // =========================
+
+  const netDisposableIncome =
+    netBusinessIncome -
+    householdExpenses -
+    existingRepayment;
+
+
+  // =========================
+  // DSCR
+  // =========================
+
+  const dscr =
+    proposedRepayment > 0
+      ? netDisposableIncome / proposedRepayment
+      : 0;
+
+
+  // =========================
+  // NET WORTH
+  // =========================
+
+  const netWorth =
+    totalAssets - totalLiabilities;
+
+
+  // =========================
+  // FORMAT MONEY
+  // =========================
+
+  const formatMoney = (value) => {
+
+    return "₦" + Number(value || 0).toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+  };
+
+
+  // =========================
+  // DISPLAY RESULTS
+  // =========================
+
+  const setValue = (id, value) => {
+
+    const element =
+      document.getElementById(id);
+
+    if (element) {
+      element.value = value;
+    }
+
+  };
+
+
+  setValue(
+    "financialMonthlySales",
+    formatMoney(monthlySales)
+  );
+
+  setValue(
+    "financialAnnualSales",
+    formatMoney(annualSales)
+  );
+
+  setValue(
+    "financialMonthlyCOGS",
+    formatMoney(monthlyCOGS)
+  );
+
+  setValue(
+    "financialAnnualCOGS",
+    formatMoney(annualCOGS)
+  );
+
+  setValue(
+    "financialGrossProfit",
+    formatMoney(grossProfit)
+  );
+
+  setValue(
+    "financialGrossMargin",
+    grossMargin.toFixed(2) + "%"
+  );
+
+  setValue(
+    "financialTotalExpenses",
+    formatMoney(totalOperatingExpenses)
+  );
+
+  setValue(
+    "financialNetBusinessIncome",
+    formatMoney(netBusinessIncome)
+  );
+
+  setValue(
+    "financialNetDisposableIncome",
+    formatMoney(netDisposableIncome)
+  );
+
+  setValue(
+    "financialDSCR",
+    dscr.toFixed(2)
+  );
+
+  setValue(
+    "financialNetWorth",
+    formatMoney(netWorth)
+  );
+
+
+  // =========================
+  // BALANCE CHECK
+  // =========================
+
+  if (totalAssets > 0 || totalLiabilities > 0) {
+
+    setValue(
+      "financialBalanceCheck",
+      "Calculated"
+    );
+
+  } else {
+
+    setValue(
+      "financialBalanceCheck",
+      "Not Checked"
+    );
+
+  }
+
+};
