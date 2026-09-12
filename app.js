@@ -5338,6 +5338,327 @@ async function saveLoanPurposeAssessment(loanId) {
     }
   }
 }
+async function saveFinancialAssessment(loanId) {
+
+  try {
+
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session = sessionData?.session;
+
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    const message =
+      document.getElementById("financialAssessmentMessage");
+
+    if (!loanId) {
+
+      if (message) {
+        message.innerHTML = `
+          <div style="
+            padding:12px;
+            background:#fdecec;
+            border-radius:8px;
+          ">
+            <strong>Loan application ID is missing.</strong>
+          </div>
+        `;
+      }
+
+      return;
+    }
+
+    /*
+      GET INPUT VALUES
+    */
+
+    const getNumber = (id) => {
+
+      const element =
+        document.getElementById(id);
+
+      return Number(element?.value) || 0;
+
+    };
+
+
+    const dailySales =
+      getNumber("financialDailySales");
+
+    const daysOpen =
+      getNumber("financialDaysOpen");
+
+    const dailyCOGS =
+      getNumber("financialDailyCOGS");
+
+    const rent =
+      getNumber("financialRent");
+
+    const salaries =
+      getNumber("financialSalaries");
+
+    const utilities =
+      getNumber("financialUtilities");
+
+    const transport =
+      getNumber("financialTransport");
+
+    const otherExpenses =
+      getNumber("financialOtherExpenses");
+
+    const householdExpenses =
+      getNumber("financialHouseholdExpenses");
+
+    const existingRepayment =
+      getNumber("financialExistingRepayment");
+
+    const proposedRepayment =
+      getNumber("financialProposedRepayment");
+
+    const totalAssets =
+      getNumber("financialTotalAssets");
+
+    const totalLiabilities =
+      getNumber("financialTotalLiabilities");
+
+
+    /*
+      CALCULATIONS
+    */
+
+    const monthlySales =
+      dailySales * daysOpen;
+
+    const annualSales =
+      monthlySales * 12;
+
+    const monthlyCOGS =
+      dailyCOGS * daysOpen;
+
+    const annualCOGS =
+      monthlyCOGS * 12;
+
+    const grossProfit =
+      monthlySales - monthlyCOGS;
+
+    const grossMargin =
+      monthlySales > 0
+        ? grossProfit / monthlySales
+        : 0;
+
+    const totalOperatingExpenses =
+      rent +
+      salaries +
+      utilities +
+      transport +
+      otherExpenses;
+
+    const netBusinessIncome =
+      grossProfit -
+      totalOperatingExpenses;
+
+    const netDisposableIncome =
+      netBusinessIncome -
+      householdExpenses -
+      existingRepayment;
+
+    const dscr =
+      proposedRepayment > 0
+        ? netDisposableIncome / proposedRepayment
+        : 0;
+
+    const netWorth =
+      totalAssets -
+      totalLiabilities;
+
+    const balanceCheck =
+      totalAssets > 0 ||
+      totalLiabilities > 0;
+
+
+    /*
+      SAVE TO SUPABASE
+    */
+
+    const financialData = {
+
+      loan_application_id: loanId,
+
+      daily_sales: dailySales,
+
+      days_open_month: daysOpen,
+
+      monthly_sales: monthlySales,
+
+      annual_sales: annualSales,
+
+      daily_cogs: dailyCOGS,
+
+      monthly_cogs: monthlyCOGS,
+
+      annual_cogs: annualCOGS,
+
+      gross_profit: grossProfit,
+
+      gross_margin: grossMargin,
+
+      total_operating_expenses:
+        totalOperatingExpenses,
+
+      net_business_income:
+        netBusinessIncome,
+
+      total_household_expenses:
+        householdExpenses,
+
+      total_existing_monthly_repayment:
+        existingRepayment,
+
+      net_disposable_income:
+        netDisposableIncome,
+
+      proposed_loan_repayment:
+        proposedRepayment,
+
+      dscr: dscr,
+
+      total_assets:
+        totalAssets,
+
+      total_liabilities:
+        totalLiabilities,
+
+      net_worth:
+        netWorth,
+
+      balance_check:
+        balanceCheck,
+
+      updated_by:
+        session.user.id
+
+    };
+
+
+    /*
+      CHECK IF RECORD ALREADY EXISTS
+    */
+
+    const { data: existingAssessment, error: findError } =
+      await supabaseClient
+        .from("financial_assessments")
+        .select("id")
+        .eq("loan_application_id", loanId)
+        .maybeSingle();
+
+
+    if (findError) {
+      throw findError;
+    }
+
+
+    /*
+      UPDATE EXISTING RECORD
+    */
+
+    if (existingAssessment) {
+
+      const { error: updateError } =
+        await supabaseClient
+          .from("financial_assessments")
+          .update(financialData)
+          .eq("id", existingAssessment.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+    }
+
+
+    /*
+      INSERT NEW RECORD
+    */
+
+    else {
+
+      financialData.created_by =
+        session.user.id;
+
+      const { error: insertError } =
+        await supabaseClient
+          .from("financial_assessments")
+          .insert([financialData]);
+
+      if (insertError) {
+        throw insertError;
+      }
+
+    }
+
+
+    /*
+      SUCCESS MESSAGE
+    */
+
+    if (message) {
+
+      message.innerHTML = `
+        <div style="
+          padding:12px;
+          background:#eaf7ee;
+          border-radius:8px;
+        ">
+          <strong>
+            Financial assessment saved successfully.
+          </strong>
+        </div>
+      `;
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Financial Assessment Save Error:",
+      error
+    );
+
+
+    const message =
+      document.getElementById(
+        "financialAssessmentMessage"
+      );
+
+
+    if (message) {
+
+      message.innerHTML = `
+        <div style="
+          padding:12px;
+          background:#fdecec;
+          border-radius:8px;
+        ">
+          <strong>
+            Unable to save financial assessment.
+          </strong>
+
+          <br><br>
+
+          ${error.message}
+        </div>
+      `;
+
+    }
+
+  }
+
+}
 window.calculateFinancialAssessment = function () {
 
   const getNumber = (id) => {
