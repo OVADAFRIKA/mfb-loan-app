@@ -7247,12 +7247,7 @@ document.addEventListener(
 // SECTION 7 - EXISTING LOAN OBLIGATIONS
 // ======================================================
 
-
-// ======================================================
-// FORMAT CURRENCY
-// ======================================================
-
-function formatExistingLoanCurrency(value) {
+window.formatExistingLoanCurrency = function (value) {
 
   const number = Number(value) || 0;
 
@@ -7261,20 +7256,22 @@ function formatExistingLoanCurrency(value) {
     maximumFractionDigits: 2
   });
 
-}
+};
 
 
-// ======================================================
+// ------------------------------------------------------
 // ADD EXISTING LOAN
-// ======================================================
+// ------------------------------------------------------
 
 window.addExistingLoan = function () {
 
   const container =
     document.getElementById("existingLoansContainer");
 
-  if (!container) return;
-
+  if (!container) {
+    console.error("existingLoansContainer not found");
+    return;
+  }
 
   const row =
     document.createElement("div");
@@ -7290,7 +7287,6 @@ window.addExistingLoan = function () {
     align-items:center;
   `;
 
-
   row.innerHTML = `
     <input
       type="text"
@@ -7304,7 +7300,6 @@ window.addExistingLoan = function () {
       placeholder="Outstanding balance"
       min="0"
       step="0.01"
-      oninput="calculateExistingLoanTotals()"
     >
 
     <input
@@ -7313,7 +7308,6 @@ window.addExistingLoan = function () {
       placeholder="Monthly repayment"
       min="0"
       step="0.01"
-      oninput="calculateExistingLoanTotals()"
     >
 
     <input
@@ -7330,17 +7324,16 @@ window.addExistingLoan = function () {
     </button>
   `;
 
-
   container.appendChild(row);
 
-  window.calculateExistingLoanTotals();
+  calculateExistingLoanTotals();
 
 };
 
 
-// ======================================================
+// ------------------------------------------------------
 // REMOVE EXISTING LOAN
-// ======================================================
+// ------------------------------------------------------
 
 window.removeExistingLoan = function (button) {
 
@@ -7348,40 +7341,36 @@ window.removeExistingLoan = function (button) {
     button.closest(".existing-loan-row");
 
   if (row) {
-
     row.remove();
-
   }
 
-
-  window.calculateExistingLoanTotals();
+  calculateExistingLoanTotals();
 
 };
 
 
-// ======================================================
+// ------------------------------------------------------
 // CALCULATE TOTALS
-// ======================================================
+// ------------------------------------------------------
 
 window.calculateExistingLoanTotals = function () {
 
-  const balances =
+  const balanceInputs =
     document.querySelectorAll(
-      ".existing-loan-balance"
+      "#existingLoansContainer .existing-loan-balance"
     );
 
-  const repayments =
+  const repaymentInputs =
     document.querySelectorAll(
-      ".existing-loan-repayment"
+      "#existingLoansContainer .existing-loan-repayment"
     );
-
 
   let totalBalance = 0;
 
   let totalRepayment = 0;
 
 
-  balances.forEach(function (input) {
+  balanceInputs.forEach(function (input) {
 
     totalBalance +=
       Number(input.value) || 0;
@@ -7389,7 +7378,7 @@ window.calculateExistingLoanTotals = function () {
   });
 
 
-  repayments.forEach(function (input) {
+  repaymentInputs.forEach(function (input) {
 
     totalRepayment +=
       Number(input.value) || 0;
@@ -7401,7 +7390,6 @@ window.calculateExistingLoanTotals = function () {
     document.getElementById(
       "totalExistingLoanBalance"
     );
-
 
   const repaymentDisplay =
     document.getElementById(
@@ -7428,13 +7416,12 @@ window.calculateExistingLoanTotals = function () {
 
   }
 
-
 };
 
 
-// ======================================================
+// ------------------------------------------------------
 // SAVE EXISTING LOAN OBLIGATIONS
-// ======================================================
+// ------------------------------------------------------
 
 window.saveExistingLoanObligations =
   async function (loanId) {
@@ -7447,10 +7434,6 @@ window.saveExistingLoanObligations =
 
   try {
 
-    // --------------------------------------------------
-    // CHECK LOGIN
-    // --------------------------------------------------
-
     const {
       data: sessionData,
       error: sessionError
@@ -7459,9 +7442,7 @@ window.saveExistingLoanObligations =
 
 
     if (sessionError) {
-
       throw sessionError;
-
     }
 
 
@@ -7486,10 +7467,6 @@ window.saveExistingLoanObligations =
     }
 
 
-    // --------------------------------------------------
-    // CHECK LOAN ID
-    // --------------------------------------------------
-
     if (!loanId) {
 
       if (message) {
@@ -7507,9 +7484,9 @@ window.saveExistingLoanObligations =
     }
 
 
-    // --------------------------------------------------
+    // ----------------------------------------------
     // FIND FINANCIAL ASSESSMENT
-    // --------------------------------------------------
+    // ----------------------------------------------
 
     const {
       data: financialAssessment,
@@ -7526,9 +7503,7 @@ window.saveExistingLoanObligations =
 
 
     if (financialError) {
-
       throw financialError;
-
     }
 
 
@@ -7553,9 +7528,9 @@ window.saveExistingLoanObligations =
       financialAssessment.id;
 
 
-    // --------------------------------------------------
-    // COLLECT EXISTING LOANS
-    // --------------------------------------------------
+    // ----------------------------------------------
+    // READ EXISTING LOANS
+    // ----------------------------------------------
 
     const rows =
       document.querySelectorAll(
@@ -7622,9 +7597,9 @@ window.saveExistingLoanObligations =
     });
 
 
-    // --------------------------------------------------
-    // DELETE PREVIOUS RECORDS
-    // --------------------------------------------------
+    // ----------------------------------------------
+    // DELETE OLD RECORDS
+    // ----------------------------------------------
 
     const {
       error: deleteError
@@ -7639,15 +7614,13 @@ window.saveExistingLoanObligations =
 
 
     if (deleteError) {
-
       throw deleteError;
-
     }
 
 
-    // --------------------------------------------------
+    // ----------------------------------------------
     // INSERT NEW RECORDS
-    // --------------------------------------------------
+    // ----------------------------------------------
 
     if (existingLoans.length > 0) {
 
@@ -7656,35 +7629,41 @@ window.saveExistingLoanObligations =
       } =
         await supabaseClient
           .from("existing_loan_obligations")
-          .insert(existingLoans);
+          .insert(
+            existingLoans
+          );
 
 
       if (insertError) {
-
         throw insertError;
-
       }
 
     }
 
 
-    // --------------------------------------------------
-    // UPDATE FINANCIAL ASSESSMENT REPAYMENT
-    // --------------------------------------------------
+    // ----------------------------------------------
+    // CALCULATE TOTAL MONTHLY REPAYMENT
+    // ----------------------------------------------
 
     const totalMonthlyRepayment =
       existingLoans.reduce(
         function (total, loan) {
 
           return total +
-            (Number(
-              loan.monthly_repayment
-            ) || 0);
+            (
+              Number(
+                loan.monthly_repayment
+              ) || 0
+            );
 
         },
         0
       );
 
+
+    // ----------------------------------------------
+    // UPDATE FINANCIAL ASSESSMENT
+    // ----------------------------------------------
 
     const {
       error: updateFinancialError
@@ -7692,11 +7671,13 @@ window.saveExistingLoanObligations =
       await supabaseClient
         .from("financial_assessments")
         .update({
+
           total_existing_monthly_repayment:
             totalMonthlyRepayment,
 
           updated_by:
             session.user.id
+
         })
         .eq(
           "id",
@@ -7705,15 +7686,13 @@ window.saveExistingLoanObligations =
 
 
     if (updateFinancialError) {
-
       throw updateFinancialError;
-
     }
 
 
-    // --------------------------------------------------
-    // UPDATE FINANCIAL CALCULATION
-    // --------------------------------------------------
+    // ----------------------------------------------
+    // UPDATE SECTION 5 FIELD
+    // ----------------------------------------------
 
     const existingRepaymentField =
       document.getElementById(
@@ -7726,14 +7705,21 @@ window.saveExistingLoanObligations =
       existingRepaymentField.value =
         totalMonthlyRepayment;
 
-      window.calculateFinancialAssessment();
+      if (
+        typeof window.calculateFinancialAssessment ===
+        "function"
+      ) {
+
+        window.calculateFinancialAssessment();
+
+      }
 
     }
 
 
-    // --------------------------------------------------
-    // SUCCESS
-    // --------------------------------------------------
+    // ----------------------------------------------
+    // SUCCESS MESSAGE
+    // ----------------------------------------------
 
     if (message) {
 
@@ -7770,23 +7756,50 @@ window.saveExistingLoanObligations =
 };
 
 
-// ======================================================
+// ------------------------------------------------------
 // INITIALISE SECTION 7
-// ======================================================
+// ------------------------------------------------------
 
 document.addEventListener(
   "DOMContentLoaded",
   function () {
 
-    if (
+    const container =
       document.getElementById(
         "existingLoansContainer"
-      )
-    ) {
+      );
 
-      window.calculateExistingLoanTotals();
 
+    if (!container) {
+      return;
     }
+
+
+    calculateExistingLoanTotals();
+
+
+    // Make dynamically added and existing
+    // number fields update totals automatically.
+
+    container.addEventListener(
+      "input",
+      function (event) {
+
+        if (
+          event.target.classList.contains(
+            "existing-loan-balance"
+          ) ||
+          event.target.classList.contains(
+            "existing-loan-repayment"
+          )
+        ) {
+
+          calculateExistingLoanTotals();
+
+        }
+
+      }
+    );
 
   }
 );
