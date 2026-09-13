@@ -5579,80 +5579,166 @@ async function showLoanDetails(loanId) {
 
   <!-- 9. CREDIT RECOMMENDATION -->
 
+<div
+  class="card"
+  id="recommendationSection"
+  style="margin-top:20px;"
+>
+
+  <h3>9. Credit Recommendation</h3>
+
+  <p style="margin-top:8px;">
+    Record the Loan Officer's credit recommendation based on the completed appraisal.
+  </p>
+
+
   <div
-    class="card"
-    id="recommendationSection"
+    class="form-grid"
     style="margin-top:20px;"
   >
 
-    <h3>9. Credit Recommendation</h3>
 
-    <div
-      class="form-grid"
-      style="margin-top:20px;"
-    >
+    <!-- RECOMMENDED AMOUNT -->
 
-      <div class="form-group">
+    <div class="form-group">
 
-        <label>Recommended Amount</label>
+      <label>
+        Recommended Amount
+      </label>
 
-        <input
-          type="text"
-          value="₦${Number(
-            loan.recommended_amount || 0
-          ).toLocaleString()}"
-          readonly
-        />
-
-      </div>
-
-      <div class="form-group">
-
-        <label>Recommended Tenor</label>
-
-        <input
-          type="text"
-          value="${
-            loan.recommended_tenor
-              ? loan.recommended_tenor + " months"
-              : "-"
-          }"
-          readonly
-        />
-
-      </div>
-
-      <div
-        class="form-group"
-        style="grid-column:1/-1;"
-      >
-
-        <label>Recommendation</label>
-
-        <textarea
-          rows="3"
-          readonly
-        >${loan.recommendation || "-"}</textarea>
-
-      </div>
-
-      <div
-        class="form-group"
-        style="grid-column:1/-1;"
-      >
-
-        <label>Recommendation Reason</label>
-
-        <textarea
-          rows="4"
-          readonly
-        >${loan.recommendation_reason || "-"}</textarea>
-
-      </div>
+      <input
+        type="number"
+        id="recommendedAmount"
+        placeholder="Enter recommended amount"
+        min="0"
+        step="0.01"
+      />
 
     </div>
 
+
+    <!-- RECOMMENDED TENOR -->
+
+    <div class="form-group">
+
+      <label>
+        Recommended Tenor
+      </label>
+
+      <select
+        id="recommendedTenor"
+      >
+
+        <option value="">
+          Select tenor
+        </option>
+
+        <option value="1">1 Month</option>
+        <option value="2">2 Months</option>
+        <option value="3">3 Months</option>
+        <option value="4">4 Months</option>
+        <option value="5">5 Months</option>
+        <option value="6">6 Months</option>
+        <option value="9">9 Months</option>
+        <option value="12">12 Months</option>
+        <option value="18">18 Months</option>
+        <option value="24">24 Months</option>
+
+      </select>
+
+    </div>
+
+
+    <!-- RECOMMENDATION -->
+
+    <div
+      class="form-group"
+      style="grid-column:1/-1;"
+    >
+
+      <label>
+        Recommendation
+      </label>
+
+      <select
+        id="loanRecommendation"
+      >
+
+        <option value="">
+          Select recommendation
+        </option>
+
+        <option value="Approve">
+          Approve
+        </option>
+
+        <option value="Decline">
+          Decline
+        </option>
+
+        <option value="Refer">
+          Refer for Further Review
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- RECOMMENDATION REASON -->
+
+    <div
+      class="form-group"
+      style="grid-column:1/-1;"
+    >
+
+      <label>
+        Recommendation Reason
+      </label>
+
+      <textarea
+        id="recommendationReason"
+        rows="5"
+        placeholder="Provide the reason supporting the recommendation..."
+      ></textarea>
+
+    </div>
+
+
   </div>
+
+
+  <!-- SAVE BUTTON -->
+
+  <div
+    style="
+      margin-top:20px;
+      text-align:right;
+    "
+  >
+
+    <button
+      type="button"
+      class="primary-btn"
+      onclick="saveCreditRecommendation('${loan.id}')"
+    >
+      Save Credit Recommendation
+    </button>
+
+  </div>
+
+
+  <!-- MESSAGE -->
+
+  <div
+    id="recommendationSaveMessage"
+    style="
+      margin-top:12px;
+      font-weight:bold;
+    "
+  ></div>
+
+</div>
 
 
   <!-- WORKSHEET STATUS -->
@@ -8416,3 +8502,227 @@ document.addEventListener(
 
   }
 );
+// ======================================================
+// SECTION 9 - CREDIT RECOMMENDATION
+// ======================================================
+
+window.saveCreditRecommendation =
+  async function (loanId) {
+
+  const message =
+    document.getElementById(
+      "recommendationSaveMessage"
+    );
+
+  try {
+
+    // ----------------------------------------------
+    // CHECK LOGIN SESSION
+    // ----------------------------------------------
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const session =
+      sessionData?.session;
+
+    if (!session) {
+
+      if (message) {
+        message.textContent =
+          "Your session has expired. Please log in again.";
+
+        message.style.color = "red";
+      }
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // CHECK LOAN APPLICATION ID
+    // ----------------------------------------------
+
+    if (!loanId) {
+
+      if (message) {
+        message.textContent =
+          "Loan application ID is missing.";
+
+        message.style.color = "red";
+      }
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // GET FORM VALUES
+    // ----------------------------------------------
+
+    const recommendedAmount =
+      Number(
+        document.getElementById(
+          "recommendedAmount"
+        )?.value
+      ) || 0;
+
+
+    const recommendedTenor =
+      Number(
+        document.getElementById(
+          "recommendedTenor"
+        )?.value
+      ) || null;
+
+
+    const recommendation =
+      document.getElementById(
+        "loanRecommendation"
+      )?.value || null;
+
+
+    const recommendationReason =
+      document.getElementById(
+        "recommendationReason"
+      )?.value.trim() || null;
+
+
+    // ----------------------------------------------
+    // BASIC VALIDATION
+    // ----------------------------------------------
+
+    if (recommendedAmount <= 0) {
+
+      if (message) {
+        message.textContent =
+          "Please enter the recommended amount.";
+
+        message.style.color = "red";
+      }
+
+      return;
+    }
+
+
+    if (!recommendedTenor) {
+
+      if (message) {
+        message.textContent =
+          "Please select the recommended tenor.";
+
+        message.style.color = "red";
+      }
+
+      return;
+    }
+
+
+    if (!recommendation) {
+
+      if (message) {
+        message.textContent =
+          "Please select a credit recommendation.";
+
+        message.style.color = "red";
+      }
+
+      return;
+    }
+
+
+    if (!recommendationReason) {
+
+      if (message) {
+        message.textContent =
+          "Please provide the recommendation reason.";
+
+        message.style.color = "red";
+      }
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // SAVE TO LOAN APPLICATION
+    // ----------------------------------------------
+
+    const {
+      error: updateError
+    } =
+      await supabaseClient
+        .from("loan_applications")
+        .update({
+
+          recommended_amount:
+            recommendedAmount,
+
+          recommended_tenor:
+            recommendedTenor,
+
+          recommendation:
+            recommendation,
+
+          recommendation_reason:
+            recommendationReason,
+
+          updated_at:
+            new Date().toISOString()
+
+        })
+        .eq(
+          "id",
+          loanId
+        );
+
+
+    if (updateError) {
+      throw updateError;
+    }
+
+
+    // ----------------------------------------------
+    // SUCCESS MESSAGE
+    // ----------------------------------------------
+
+    if (message) {
+
+      message.textContent =
+        "Credit Recommendation saved successfully.";
+
+      message.style.color =
+        "green";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Credit Recommendation Save Error:",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Unable to save Credit Recommendation: " +
+        (error.message || "Unknown error");
+
+      message.style.color =
+        "red";
+
+    }
+
+  }
+
+};
