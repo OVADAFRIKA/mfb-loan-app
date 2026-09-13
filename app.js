@@ -6287,11 +6287,13 @@ window.calculateFinancialAssessment = function () {
   }
 
 };
+}
+
+
 // ======================================================
 // SECTION 6 - INVENTORY ASSESSMENT
 // ======================================================
 
-// Format numbers as Nigerian Naira
 function formatInventoryCurrency(value) {
   const number = Number(value) || 0;
 
@@ -6302,17 +6304,19 @@ function formatInventoryCurrency(value) {
 }
 
 
-// ------------------------------------------------------
+// ======================================================
 // ADD INVENTORY ITEM
-// ------------------------------------------------------
+// ======================================================
 
 window.addInventoryItem = function () {
 
-  const container = document.getElementById("inventoryItemsContainer");
+  const container =
+    document.getElementById("inventoryItemsContainer");
 
   if (!container) return;
 
-  const row = document.createElement("div");
+  const row =
+    document.createElement("div");
 
   row.className = "inventory-item-row";
 
@@ -6351,542 +6355,41 @@ window.addInventoryItem = function () {
 
   container.appendChild(row);
 
-  calculateInventoryTotal();
+  window.calculateInventoryTotal();
 };
 
 
-// ------------------------------------------------------
-// REMOVE INVENTORY ITEM
-// ------------------------------------------------------
-
-window.removeInventoryItem = function (button) {
-
-  const row = button.closest(".inventory-item-row");
-
-  if (!row) return;
-
-  const container = document.getElementById("inventoryItemsContainer");
-
-  // Keep at least one inventory row
-  if (container && container.querySelectorAll(".inventory-item-row").length <= 1) {
-
-    const category = row.querySelector(".inventory-category");
-    const value = row.querySelector(".inventory-value");
-
-    if (category) category.value = "";
-    if (value) value.value = "";
-
-  } else {
-
-    row.remove();
-
-  }
-
-  calculateInventoryTotal();
-};
-
-
-// ------------------------------------------------------
-// CALCULATE TOTAL INVENTORY VALUE
-// ------------------------------------------------------
-
-window.calculateInventoryTotal = function () {
-
-  const values = document.querySelectorAll(".inventory-value");
-
-  let total = 0;
-
-  values.forEach(function (input) {
-
-    const value = Number(input.value) || 0;
-
-    total += value;
-
-  });
-
-  const totalDisplay = document.getElementById("inventoryTotalValue");
-
-  if (totalDisplay) {
-    totalDisplay.textContent = formatInventoryCurrency(total);
-  }
-
-  // Also update Current Inventory Value
-  const currentInventoryValue =
-    document.getElementById("currentInventoryValue");
-
-  if (currentInventoryValue && total > 0) {
-    currentInventoryValue.value = total.toFixed(2);
-
-    calculateInventoryMetrics();
-  }
-
-};
-
-
-// ------------------------------------------------------
-// INVENTORY FINANCIAL CALCULATIONS
-// ------------------------------------------------------
-
-window.calculateInventoryMetrics = function () {
-
-  const inventoryValue =
-    Number(document.getElementById("currentInventoryValue")?.value) || 0;
-
-  const monthlyPurchases =
-    Number(document.getElementById("averageMonthlyPurchases")?.value) || 0;
-
-  const monthlyCOGS =
-    Number(document.getElementById("averageMonthlyCOGS")?.value) || 0;
-
-
-  // Monthly Turnover
-  let monthlyTurnover = 0;
-
-  if (inventoryValue > 0) {
-    monthlyTurnover = monthlyCOGS / inventoryValue;
-  }
-
-
-  // Annual Turnover
-  let annualTurnover = monthlyTurnover * 12;
-
-
-  // Holding Period
-  let holdingPeriod = 0;
-
-  if (annualTurnover > 0) {
-    holdingPeriod = 365 / annualTurnover;
-  }
-
-
-  // Rotation Classification
-  let classification = "";
-
-  if (annualTurnover <= 0) {
-
-    classification = "Not Available";
-
-  } else if (annualTurnover >= 12) {
-
-    classification = "Very Fast";
-
-  } else if (annualTurnover >= 6) {
-
-    classification = "Fast";
-
-  } else if (annualTurnover >= 3) {
-
-    classification = "Moderate";
-
-  } else {
-
-    classification = "Slow";
-
-  }
-
-
-  // Display Monthly Turnover
-  const monthlyTurnoverField =
-    document.getElementById("monthlyTurnover");
-
-  if (monthlyTurnoverField) {
-    monthlyTurnoverField.value =
-      monthlyTurnover.toFixed(2);
-  }
-
-
-  // Display Annual Turnover
-  const annualTurnoverField =
-    document.getElementById("annualTurnover");
-
-  if (annualTurnoverField) {
-    annualTurnoverField.value =
-      annualTurnover.toFixed(2);
-  }
-
-
-  // Display Holding Period
-  const holdingPeriodField =
-    document.getElementById("holdingPeriodDays");
-
-  if (holdingPeriodField) {
-    holdingPeriodField.value =
-      holdingPeriod > 0
-        ? holdingPeriod.toFixed(0)
-        : "0";
-  }
-
-
-  // Display Classification
-  const classificationField =
-    document.getElementById("rotationClassification");
-
-  if (classificationField) {
-    classificationField.value = classification;
-  }
-
-};
-
-
-// ------------------------------------------------------
-// INITIALISE INVENTORY CALCULATIONS
-// ------------------------------------------------------
-
-document.addEventListener("DOMContentLoaded", function () {
-
-  calculateInventoryTotal();
-
-  calculateInventoryMetrics();
-
-});
 // ======================================================
-// SECTION 6 - INVENTORY ASSESSMENT
+// REMOVE INVENTORY ITEM
 // ======================================================
 
-// Format numbers as Nigerian Naira
-function formatInventoryCurrency(value) {
-  const number = Number(value) || 0;
-
-  return "₦" + number.toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-
-// ------------------------------------------------------
-// ADD INVENTORY ITEM
-// ------------------------------------------------------
-
-window.addInventoryItem = function () {
-
-  const container = document.getElementById("inventoryItemsContainer");
-
-  if (!container) return;
-
-  const row = document.createElement("div");
-
-  row.className = "inventory-item-row";
-
-  row.style.cssText = `
-    display:grid;
-    grid-template-columns:1fr 180px auto;
-    gap:10px;
-    margin-bottom:10px;
-    align-items:center;
-  `;
-
-  row.innerHTML = `
-    <input
-      type="text"
-      class="inventory-category"
-      placeholder="Inventory category"
-    >
-
-    <input
-      type="number"
-      class="inventory-value"
-      placeholder="Estimated value"
-      min="0"
-      step="0.01"
-      oninput="calculateInventoryTotal()"
-    >
-
-    <button
-      type="button"
-      class="secondary-btn"
-      onclick="removeInventoryItem(this)"
-    >
-      Remove
-    </button>
-  `;
-
-  container.appendChild(row);
-
-  calculateInventoryTotal();
-};
-
-
-// ------------------------------------------------------
-// REMOVE INVENTORY ITEM
-// ------------------------------------------------------
-
 window.removeInventoryItem = function (button) {
 
-  const row = button.closest(".inventory-item-row");
-
-  if (!row) return;
-
-  const container = document.getElementById("inventoryItemsContainer");
-
-  // Keep at least one inventory row
-  if (container && container.querySelectorAll(".inventory-item-row").length <= 1) {
-
-    const category = row.querySelector(".inventory-category");
-    const value = row.querySelector(".inventory-value");
-
-    if (category) category.value = "";
-    if (value) value.value = "";
-
-  } else {
-
-    row.remove();
-
-  }
-
-  calculateInventoryTotal();
-};
-
-
-// ------------------------------------------------------
-// CALCULATE TOTAL INVENTORY VALUE
-// ------------------------------------------------------
-
-window.calculateInventoryTotal = function () {
-
-  const values = document.querySelectorAll(".inventory-value");
-
-  let total = 0;
-
-  values.forEach(function (input) {
-
-    const value = Number(input.value) || 0;
-
-    total += value;
-
-  });
-
-  const totalDisplay = document.getElementById("inventoryTotalValue");
-
-  if (totalDisplay) {
-    totalDisplay.textContent = formatInventoryCurrency(total);
-  }
-
-  // Also update Current Inventory Value
-  const currentInventoryValue =
-    document.getElementById("currentInventoryValue");
-
-  if (currentInventoryValue && total > 0) {
-    currentInventoryValue.value = total.toFixed(2);
-
-    calculateInventoryMetrics();
-  }
-
-};
-
-
-// ------------------------------------------------------
-// INVENTORY FINANCIAL CALCULATIONS
-// ------------------------------------------------------
-
-window.calculateInventoryMetrics = function () {
-
-  const inventoryValue =
-    Number(document.getElementById("currentInventoryValue")?.value) || 0;
-
-  const monthlyPurchases =
-    Number(document.getElementById("averageMonthlyPurchases")?.value) || 0;
-
-  const monthlyCOGS =
-    Number(document.getElementById("averageMonthlyCOGS")?.value) || 0;
-
-
-  // Monthly Turnover
-  let monthlyTurnover = 0;
-
-  if (inventoryValue > 0) {
-    monthlyTurnover = monthlyCOGS / inventoryValue;
-  }
-
-
-  // Annual Turnover
-  let annualTurnover = monthlyTurnover * 12;
-
-
-  // Holding Period
-  let holdingPeriod = 0;
-
-  if (annualTurnover > 0) {
-    holdingPeriod = 365 / annualTurnover;
-  }
-
-
-  // Rotation Classification
-  let classification = "";
-
-  if (annualTurnover <= 0) {
-
-    classification = "Not Available";
-
-  } else if (annualTurnover >= 12) {
-
-    classification = "Very Fast";
-
-  } else if (annualTurnover >= 6) {
-
-    classification = "Fast";
-
-  } else if (annualTurnover >= 3) {
-
-    classification = "Moderate";
-
-  } else {
-
-    classification = "Slow";
-
-  }
-
-
-  // Display Monthly Turnover
-  const monthlyTurnoverField =
-    document.getElementById("monthlyTurnover");
-
-  if (monthlyTurnoverField) {
-    monthlyTurnoverField.value =
-      monthlyTurnover.toFixed(2);
-  }
-
-
-  // Display Annual Turnover
-  const annualTurnoverField =
-    document.getElementById("annualTurnover");
-
-  if (annualTurnoverField) {
-    annualTurnoverField.value =
-      annualTurnover.toFixed(2);
-  }
-
-
-  // Display Holding Period
-  const holdingPeriodField =
-    document.getElementById("holdingPeriodDays");
-
-  if (holdingPeriodField) {
-    holdingPeriodField.value =
-      holdingPeriod > 0
-        ? holdingPeriod.toFixed(0)
-        : "0";
-  }
-
-
-  // Display Classification
-  const classificationField =
-    document.getElementById("rotationClassification");
-
-  if (classificationField) {
-    classificationField.value = classification;
-  }
-
-};
-
-
-// ------------------------------------------------------
-// INITIALISE INVENTORY CALCULATIONS
-// ------------------------------------------------------
-
-document.addEventListener("DOMContentLoaded", function () {
-
-  calculateInventoryTotal();
-
-  calculateInventoryMetrics();
-
-});
-/* =========================================================
-   INVENTORY ASSESSMENT
-   ========================================================= */
-
-function formatInventoryCurrency(value) {
-  const number = Number(value) || 0;
-
-  return "₦" + number.toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-
-/* =========================
-   ADD INVENTORY ITEM
-   ========================= */
-
-window.addInventoryItem = function () {
-
-  const container = document.getElementById("inventoryItemsContainer");
-
-  if (!container) return;
-
-  const row = document.createElement("div");
-
-  row.className = "inventory-item-row";
-
-  row.style.display = "grid";
-  row.style.gridTemplateColumns = "1fr 180px auto";
-  row.style.gap = "10px";
-  row.style.marginBottom = "10px";
-  row.style.alignItems = "center";
-
-  row.innerHTML = `
-    <input
-      type="text"
-      class="inventory-category"
-      placeholder="Inventory category"
-    >
-
-    <input
-      type="number"
-      class="inventory-value"
-      placeholder="Estimated value"
-      min="0"
-      step="0.01"
-      oninput="calculateInventoryTotal()"
-    >
-
-    <button
-      type="button"
-      class="secondary-btn"
-      onclick="removeInventoryItem(this)"
-    >
-      Remove
-    </button>
-  `;
-
-  container.appendChild(row);
-
-  calculateInventoryTotal();
-};
-
-
-/* =========================
-   REMOVE INVENTORY ITEM
-   ========================= */
-
-window.removeInventoryItem = function (button) {
-
-  const row = button.closest(".inventory-item-row");
+  const row =
+    button.closest(".inventory-item-row");
 
   if (row) {
     row.remove();
   }
 
-  calculateInventoryTotal();
+  window.calculateInventoryTotal();
 };
 
 
-/* =========================
-   CALCULATE TOTAL INVENTORY
-   ========================= */
+// ======================================================
+// CALCULATE TOTAL INVENTORY VALUE
+// ======================================================
 
 window.calculateInventoryTotal = function () {
 
-  const values = document.querySelectorAll(".inventory-value");
+  const values =
+    document.querySelectorAll(".inventory-value");
 
   let total = 0;
 
   values.forEach(function (input) {
 
-    const value = Number(input.value) || 0;
-
-    total += value;
+    total += Number(input.value) || 0;
 
   });
 
@@ -6900,10 +6403,8 @@ window.calculateInventoryTotal = function () {
 
   }
 
-  /*
-     Automatically update Current Inventory Value
-     when inventory items have been entered.
-  */
+
+  // Automatically update Current Inventory Value
 
   const currentInventoryValue =
     document.getElementById("currentInventoryValue");
@@ -6915,41 +6416,37 @@ window.calculateInventoryTotal = function () {
 
   }
 
-  calculateInventoryMetrics();
+  window.calculateInventoryMetrics();
+
 };
 
 
-/* =========================
-   CALCULATE INVENTORY METRICS
-   ========================= */
+// ======================================================
+// CALCULATE INVENTORY METRICS
+// ======================================================
 
 window.calculateInventoryMetrics = function () {
 
   const inventoryValue =
     Number(
-      document.getElementById("currentInventoryValue")?.value
-    ) || 0;
-
-  const monthlyPurchases =
-    Number(
-      document.getElementById("averageMonthlyPurchases")?.value
+      document.getElementById(
+        "currentInventoryValue"
+      )?.value
     ) || 0;
 
   const monthlyCOGS =
     Number(
-      document.getElementById("averageMonthlyCOGS")?.value
+      document.getElementById(
+        "averageMonthlyCOGS"
+      )?.value
     ) || 0;
 
 
-  /*
-     Monthly Inventory Turnover
-
-     = Monthly COGS ÷ Current Inventory
-  */
+  // Monthly turnover
 
   let monthlyTurnover = 0;
 
-  if (inventoryValue > 0 && monthlyCOGS > 0) {
+  if (inventoryValue > 0) {
 
     monthlyTurnover =
       monthlyCOGS / inventoryValue;
@@ -6957,21 +6454,13 @@ window.calculateInventoryMetrics = function () {
   }
 
 
-  /*
-     Annual Inventory Turnover
+  // Annual turnover
 
-     = Monthly Turnover × 12
-  */
-
-  let annualTurnover =
+  const annualTurnover =
     monthlyTurnover * 12;
 
 
-  /*
-     Holding Period
-
-     = 365 ÷ Annual Turnover
-  */
+  // Holding period
 
   let holdingPeriodDays = 0;
 
@@ -6983,17 +6472,11 @@ window.calculateInventoryMetrics = function () {
   }
 
 
-  /*
-     Rotation Classification
-  */
+  // Classification
 
-  let classification = "";
+  let classification = "Not Available";
 
-  if (annualTurnover <= 0) {
-
-    classification = "Not Available";
-
-  } else if (annualTurnover >= 12) {
+  if (annualTurnover >= 12) {
 
     classification = "Very Fast";
 
@@ -7005,51 +6488,50 @@ window.calculateInventoryMetrics = function () {
 
     classification = "Moderate";
 
-  } else {
+  } else if (annualTurnover > 0) {
 
     classification = "Slow";
 
   }
 
 
-  const monthlyTurnoverField =
+  const monthlyField =
     document.getElementById("monthlyTurnover");
 
-  const annualTurnoverField =
+  const annualField =
     document.getElementById("annualTurnover");
 
-  const holdingPeriodField =
+  const holdingField =
     document.getElementById("holdingPeriodDays");
 
   const classificationField =
-    document.getElementById("rotationClassification");
+    document.getElementById(
+      "rotationClassification"
+    );
 
 
-  if (monthlyTurnoverField) {
+  if (monthlyField) {
 
-    monthlyTurnoverField.value =
+    monthlyField.value =
       monthlyTurnover.toFixed(2);
 
   }
 
+  if (annualField) {
 
-  if (annualTurnoverField) {
-
-    annualTurnoverField.value =
+    annualField.value =
       annualTurnover.toFixed(2);
 
   }
 
+  if (holdingField) {
 
-  if (holdingPeriodField) {
-
-    holdingPeriodField.value =
+    holdingField.value =
       holdingPeriodDays > 0
         ? holdingPeriodDays.toFixed(0)
         : "0";
 
   }
-
 
   if (classificationField) {
 
@@ -7057,19 +6539,39 @@ window.calculateInventoryMetrics = function () {
       classification;
 
   }
+
 };
 
 
-/* =========================
-   SAVE INVENTORY ASSESSMENT
-   ========================= */
+// ======================================================
+// SAVE INVENTORY ASSESSMENT
+// ======================================================
 
 window.saveInventoryAssessment = async function (loanId) {
 
+  const message =
+    document.getElementById(
+      "inventorySaveMessage"
+    );
+
+
   try {
 
-    const { data: sessionData } =
+    // Check login
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
       await supabaseClient.auth.getSession();
+
+
+    if (sessionError) {
+
+      throw sessionError;
+
+    }
+
 
     const session =
       sessionData?.session;
@@ -7077,16 +6579,21 @@ window.saveInventoryAssessment = async function (loanId) {
 
     if (!session) {
 
-      showLogin();
+      if (message) {
+
+        message.textContent =
+          "Your session has expired. Please log in again.";
+
+        message.style.color = "red";
+
+      }
 
       return;
 
     }
 
 
-    const message =
-      document.getElementById("inventorySaveMessage");
-
+    // Check loan ID
 
     if (!loanId) {
 
@@ -7095,6 +6602,8 @@ window.saveInventoryAssessment = async function (loanId) {
         message.textContent =
           "Loan application ID is missing.";
 
+        message.style.color = "red";
+
       }
 
       return;
@@ -7102,80 +6611,51 @@ window.saveInventoryAssessment = async function (loanId) {
     }
 
 
-    /*
-       Collect inventory items
-    */
+    // --------------------------------------------------
+    // COLLECT INVENTORY ITEMS
+    // --------------------------------------------------
 
     const rows =
       document.querySelectorAll(
         "#inventoryItemsContainer .inventory-item-row"
       );
 
-
     const inventoryItems = [];
-
-    let invalidItem = false;
 
 
     rows.forEach(function (row) {
 
       const category =
-        row.querySelector(".inventory-category")?.value.trim();
+        row.querySelector(
+          ".inventory-category"
+        )?.value.trim();
 
       const value =
         Number(
-          row.querySelector(".inventory-value")?.value
+          row.querySelector(
+            ".inventory-value"
+          )?.value
         ) || 0;
 
 
-      /*
-         Ignore completely empty rows
-      */
+      if (category) {
 
-      if (!category && value === 0) {
+        inventoryItems.push({
 
-        return;
+          category: category,
 
-      }
+          estimated_value: value
 
-
-      if (!category) {
-
-        invalidItem = true;
-
-        return;
+        });
 
       }
-
-
-      inventoryItems.push({
-
-        category: category,
-
-        estimated_value: value
-
-      });
 
     });
 
 
-    if (invalidItem) {
-
-      if (message) {
-
-        message.textContent =
-          "Please enter an inventory category for every inventory item.";
-
-      }
-
-      return;
-
-    }
-
-
-    /*
-       Calculate total inventory value
-    */
+    // --------------------------------------------------
+    // TOTAL INVENTORY
+    // --------------------------------------------------
 
     let totalInventoryValue = 0;
 
@@ -7187,20 +6667,23 @@ window.saveInventoryAssessment = async function (loanId) {
     });
 
 
-    /*
-       Get financial assessment values
-    */
-
     const currentInventoryInput =
       document.getElementById(
         "currentInventoryValue"
       );
 
+
     const currentInventoryValue =
       totalInventoryValue > 0
         ? totalInventoryValue
-        : Number(currentInventoryInput?.value) || 0;
+        : Number(
+            currentInventoryInput?.value
+          ) || 0;
 
+
+    // --------------------------------------------------
+    // OTHER VALUES
+    // --------------------------------------------------
 
     const averageMonthlyPurchases =
       Number(
@@ -7248,11 +6731,11 @@ window.saveInventoryAssessment = async function (loanId) {
       )?.value || null;
 
 
-    /*
-       Helper for text fields
-    */
+    // --------------------------------------------------
+    // HELPERS
+    // --------------------------------------------------
 
-    function getTextValue(id) {
+    function getText(id) {
 
       const element =
         document.getElementById(id);
@@ -7267,11 +6750,7 @@ window.saveInventoryAssessment = async function (loanId) {
     }
 
 
-    /*
-       Helper for boolean fields
-    */
-
-    function getBooleanValue(id) {
+    function getBoolean(id) {
 
       const element =
         document.getElementById(id);
@@ -7287,13 +6766,14 @@ window.saveInventoryAssessment = async function (loanId) {
     }
 
 
-    /*
-       Build inventory assessment record
-    */
+    // --------------------------------------------------
+    // INVENTORY ASSESSMENT DATA
+    // --------------------------------------------------
 
     const inventoryData = {
 
-      loan_application_id: loanId,
+      loan_application_id:
+        loanId,
 
       current_inventory_value:
         currentInventoryValue,
@@ -7317,28 +6797,28 @@ window.saveInventoryAssessment = async function (loanId) {
         rotationClassification,
 
       stock_level:
-        getTextValue("stockLevel"),
+        getText("stockLevel"),
 
       stock_movement:
-        getTextValue("stockMovement"),
+        getText("stockMovement"),
 
       slow_moving_stock:
-        getBooleanValue("slowMovingStock"),
+        getBoolean("slowMovingStock"),
 
       obsolete_damaged_stock:
-        getBooleanValue("obsoleteDamagedStock"),
+        getBoolean("obsoleteDamagedStock"),
 
       stock_out_frequency:
-        getTextValue("stockOutFrequency"),
+        getText("stockOutFrequency"),
 
       seasonal_stock:
-        getBooleanValue("seasonalStock"),
+        getBoolean("seasonalStock"),
 
       inventory_observation:
-        getTextValue("inventoryObservation"),
+        getText("inventoryObservation"),
 
       major_suppliers:
-        getTextValue("majorSuppliers"),
+        getText("majorSuppliers"),
 
       number_of_major_suppliers:
         Number(
@@ -7348,17 +6828,17 @@ window.saveInventoryAssessment = async function (loanId) {
         ) || null,
 
       supplier_credit_available:
-        getBooleanValue(
+        getBoolean(
           "supplierCreditAvailable"
         ),
 
       average_supplier_credit_period:
-        getTextValue(
+        getText(
           "averageSupplierCreditPeriod"
         ),
 
       supplier_dependency:
-        getTextValue(
+        getText(
           "supplierDependency"
         ),
 
@@ -7371,25 +6851,22 @@ window.saveInventoryAssessment = async function (loanId) {
     };
 
 
-    /*
-       Check whether an assessment already exists
-    */
+    // --------------------------------------------------
+    // CHECK FOR EXISTING ASSESSMENT
+    // --------------------------------------------------
 
     const {
       data: existingAssessment,
       error: findError
-    } = await supabaseClient
-
-      .from("inventory_assessments")
-
-      .select("id")
-
-      .eq(
-        "loan_application_id",
-        loanId
-      )
-
-      .maybeSingle();
+    } =
+      await supabaseClient
+        .from("inventory_assessments")
+        .select("id")
+        .eq(
+          "loan_application_id",
+          loanId
+        )
+        .maybeSingle();
 
 
     if (findError) {
@@ -7402,9 +6879,9 @@ window.saveInventoryAssessment = async function (loanId) {
     let assessmentId;
 
 
-    /*
-       UPDATE existing assessment
-    */
+    // --------------------------------------------------
+    // UPDATE EXISTING ASSESSMENT
+    // --------------------------------------------------
 
     if (existingAssessment) {
 
@@ -7414,16 +6891,14 @@ window.saveInventoryAssessment = async function (loanId) {
 
       const {
         error: updateError
-      } = await supabaseClient
-
-        .from("inventory_assessments")
-
-        .update(inventoryData)
-
-        .eq(
-          "id",
-          assessmentId
-        );
+      } =
+        await supabaseClient
+          .from("inventory_assessments")
+          .update(inventoryData)
+          .eq(
+            "id",
+            assessmentId
+          );
 
 
       if (updateError) {
@@ -7435,9 +6910,9 @@ window.saveInventoryAssessment = async function (loanId) {
     }
 
 
-    /*
-       INSERT new assessment
-    */
+    // --------------------------------------------------
+    // CREATE NEW ASSESSMENT
+    // --------------------------------------------------
 
     else {
 
@@ -7457,15 +6932,12 @@ window.saveInventoryAssessment = async function (loanId) {
       const {
         data: insertedAssessment,
         error: insertError
-      } = await supabaseClient
-
-        .from("inventory_assessments")
-
-        .insert(newInventoryData)
-
-        .select("id")
-
-        .single();
+      } =
+        await supabaseClient
+          .from("inventory_assessments")
+          .insert(newInventoryData)
+          .select("id")
+          .single();
 
 
       if (insertError) {
@@ -7481,23 +6953,20 @@ window.saveInventoryAssessment = async function (loanId) {
     }
 
 
-    /*
-       Delete existing inventory items
-       so edited items can be saved cleanly.
-    */
+    // --------------------------------------------------
+    // DELETE OLD INVENTORY ITEMS
+    // --------------------------------------------------
 
     const {
       error: deleteError
-    } = await supabaseClient
-
-      .from("inventory_items")
-
-      .delete()
-
-      .eq(
-        "assessment_id",
-        assessmentId
-      );
+    } =
+      await supabaseClient
+        .from("inventory_items")
+        .delete()
+        .eq(
+          "assessment_id",
+          assessmentId
+        );
 
 
     if (deleteError) {
@@ -7507,9 +6976,9 @@ window.saveInventoryAssessment = async function (loanId) {
     }
 
 
-    /*
-       Save inventory items
-    */
+    // --------------------------------------------------
+    // INSERT INVENTORY ITEMS
+    // --------------------------------------------------
 
     if (inventoryItems.length > 0) {
 
@@ -7534,11 +7003,10 @@ window.saveInventoryAssessment = async function (loanId) {
 
       const {
         error: itemsError
-      } = await supabaseClient
-
-        .from("inventory_items")
-
-        .insert(itemsToInsert);
+      } =
+        await supabaseClient
+          .from("inventory_items")
+          .insert(itemsToInsert);
 
 
       if (itemsError) {
@@ -7550,29 +7018,9 @@ window.saveInventoryAssessment = async function (loanId) {
     }
 
 
-    /*
-       Update displayed total
-    */
-
-    const totalDisplay =
-      document.getElementById(
-        "inventoryTotalValue"
-      );
-
-
-    if (totalDisplay) {
-
-      totalDisplay.textContent =
-        formatInventoryCurrency(
-          currentInventoryValue
-        );
-
-    }
-
-
-    /*
-       Success message
-    */
+    // --------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------
 
     if (message) {
 
@@ -7588,15 +7036,9 @@ window.saveInventoryAssessment = async function (loanId) {
   } catch (error) {
 
     console.error(
-      "Inventory assessment error:",
+      "Inventory Assessment Error:",
       error
     );
-
-
-    const message =
-      document.getElementById(
-        "inventorySaveMessage"
-      );
 
 
     if (message) {
@@ -7615,9 +7057,9 @@ window.saveInventoryAssessment = async function (loanId) {
 };
 
 
-/* =========================
-   INITIAL INVENTORY CALCULATION
-   ========================= */
+// ======================================================
+// INITIALISE INVENTORY
+// ======================================================
 
 document.addEventListener(
   "DOMContentLoaded",
