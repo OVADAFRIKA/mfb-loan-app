@@ -4832,37 +4832,417 @@ async function showLoanDetails(loanId) {
     style="margin-top:15px;"
   ></div>
 
-</div>  <!-- 6. INVENTORY -->
+<!-- 6. INVENTORY -->
 
-  <div
-    class="card"
-    id="inventorySection"
-    style="margin-top:20px;"
-  >
+<div
+  class="card"
+  id="inventorySection"
+  style="margin-top:20px;"
+>
 
-    <h3>6. Inventory Assessment</h3>
+  <h3>6. Inventory Assessment</h3>
 
-    <p style="margin-top:8px;">
-      Assess inventory level, stock movement and inventory rotation.
+  <p style="margin-top:8px;">
+    Assess inventory value, stock movement, inventory rotation and supplier dependency.
+  </p>
+
+  <!-- INVENTORY ITEMS -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4>Inventory Items</h4>
+
+    <p style="margin-top:6px;">
+      Record the customer's major inventory categories and their estimated values.
     </p>
+
+    <div id="inventoryItemsContainer" style="margin-top:15px;">
+
+      <div
+        class="inventory-item-row"
+        style="
+          display:grid;
+          grid-template-columns:1fr 180px auto;
+          gap:10px;
+          margin-bottom:10px;
+          align-items:center;
+        "
+      >
+
+        <input
+          type="text"
+          class="inventory-category"
+          placeholder="Inventory category"
+        >
+
+        <input
+          type="number"
+          class="inventory-value"
+          placeholder="Estimated value"
+          min="0"
+          step="0.01"
+          oninput="calculateInventoryTotal()"
+        >
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="removeInventoryItem(this)"
+        >
+          Remove
+        </button>
+
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="secondary-btn"
+      style="margin-top:5px;"
+      onclick="addInventoryItem()"
+    >
+      + Add Inventory Item
+    </button>
 
     <div style="
       margin-top:18px;
-      padding:18px;
-      background:#f8f9fa;
-      border-radius:8px;
+      padding:14px;
+      background:#ffffff;
+      border-radius:6px;
+      border:1px solid #ddd;
     ">
 
-      <strong>Inventory assessment module</strong>
+      <strong>Total Inventory Value</strong>
 
-      <p style="margin-top:8px;">
-        Inventory rotation will be calculated automatically
-        to support the credit decision.
-      </p>
+      <div
+        id="inventoryTotalValue"
+        style="
+          margin-top:6px;
+          font-size:20px;
+          font-weight:bold;
+        "
+      >
+        ₦0
+      </div>
 
     </div>
 
   </div>
+
+
+  <!-- INVENTORY FINANCIAL ASSESSMENT -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4>Inventory Financial Assessment</h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:15px;
+      margin-top:15px;
+    ">
+
+      <div>
+        <label>Current Inventory Value</label>
+
+        <input
+          type="number"
+          id="currentInventoryValue"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateInventoryMetrics()"
+        >
+      </div>
+
+      <div>
+        <label>Average Monthly Purchases</label>
+
+        <input
+          type="number"
+          id="averageMonthlyPurchases"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateInventoryMetrics()"
+        >
+      </div>
+
+      <div>
+        <label>Average Monthly COGS</label>
+
+        <input
+          type="number"
+          id="averageMonthlyCOGS"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          oninput="calculateInventoryMetrics()"
+        >
+      </div>
+
+      <div>
+        <label>Monthly Turnover</label>
+
+        <input
+          type="text"
+          id="monthlyTurnover"
+          value="0.00"
+          readonly
+        >
+      </div>
+
+      <div>
+        <label>Annual Turnover</label>
+
+        <input
+          type="text"
+          id="annualTurnover"
+          value="0.00"
+          readonly
+        >
+      </div>
+
+      <div>
+        <label>Holding Period (Days)</label>
+
+        <input
+          type="text"
+          id="holdingPeriodDays"
+          value="0"
+          readonly
+        >
+      </div>
+
+      <div>
+        <label>Rotation Classification</label>
+
+        <input
+          type="text"
+          id="rotationClassification"
+          value=""
+          readonly
+        >
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- STOCK ASSESSMENT -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4>Stock Assessment</h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:15px;
+      margin-top:15px;
+    ">
+
+      <div>
+        <label>Stock Level</label>
+
+        <select id="stockLevel">
+          <option value="">Select</option>
+          <option value="Low">Low</option>
+          <option value="Normal">Normal</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Stock Movement</label>
+
+        <select id="stockMovement">
+          <option value="">Select</option>
+          <option value="Fast">Fast</option>
+          <option value="Normal">Normal</option>
+          <option value="Slow">Slow</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Stock-out Frequency</label>
+
+        <select id="stockOutFrequency">
+          <option value="">Select</option>
+          <option value="Never">Never</option>
+          <option value="Rarely">Rarely</option>
+          <option value="Occasionally">Occasionally</option>
+          <option value="Frequently">Frequently</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Slow-moving Stock</label>
+
+        <select id="slowMovingStock">
+          <option value="">Select</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Obsolete/Damaged Stock</label>
+
+        <select id="obsoleteDamagedStock">
+          <option value="">Select</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Seasonal Stock</label>
+
+        <select id="seasonalStock">
+          <option value="">Select</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div style="margin-top:15px;">
+
+      <label>Inventory Observation</label>
+
+      <textarea
+        id="inventoryObservation"
+        rows="4"
+        placeholder="Enter your observations about the customer's inventory..."
+      ></textarea>
+
+    </div>
+
+  </div>
+
+
+  <!-- SUPPLIER ASSESSMENT -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4>Supplier Assessment</h4>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:15px;
+      margin-top:15px;
+    ">
+
+      <div>
+        <label>Major Suppliers</label>
+
+        <input
+          type="text"
+          id="majorSuppliers"
+          placeholder="Enter major suppliers"
+        >
+      </div>
+
+      <div>
+        <label>Number of Major Suppliers</label>
+
+        <input
+          type="number"
+          id="numberOfMajorSuppliers"
+          min="0"
+          placeholder="0"
+        >
+      </div>
+
+      <div>
+        <label>Supplier Credit Available</label>
+
+        <select id="supplierCreditAvailable">
+          <option value="">Select</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Average Supplier Credit Period</label>
+
+        <input
+          type="text"
+          id="averageSupplierCreditPeriod"
+          placeholder="e.g. 30 days"
+        >
+      </div>
+
+      <div>
+        <label>Supplier Dependency</label>
+
+        <select id="supplierDependency">
+          <option value="">Select</option>
+          <option value="Low">Low</option>
+          <option value="Moderate">Moderate</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- SAVE -->
+
+  <div style="
+    margin-top:20px;
+    padding:18px;
+    text-align:right;
+  ">
+
+    <button
+      type="button"
+      class="primary-btn"
+      onclick="saveInventoryAssessment()"
+    >
+      Save Inventory Assessment
+    </button>
+
+  </div>
+
+  <div
+    id="inventorySaveMessage"
+    style="
+      margin-top:10px;
+      font-weight:bold;
+    "
+  ></div>
+
+</div>
 
 
   <!-- 7. EXISTING LOANS -->
