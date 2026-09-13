@@ -6539,3 +6539,1109 @@ document.addEventListener("DOMContentLoaded", function () {
   calculateInventoryMetrics();
 
 });
+// ======================================================
+// SECTION 6 - INVENTORY ASSESSMENT
+// ======================================================
+
+// Format numbers as Nigerian Naira
+function formatInventoryCurrency(value) {
+  const number = Number(value) || 0;
+
+  return "₦" + number.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+
+// ------------------------------------------------------
+// ADD INVENTORY ITEM
+// ------------------------------------------------------
+
+window.addInventoryItem = function () {
+
+  const container = document.getElementById("inventoryItemsContainer");
+
+  if (!container) return;
+
+  const row = document.createElement("div");
+
+  row.className = "inventory-item-row";
+
+  row.style.cssText = `
+    display:grid;
+    grid-template-columns:1fr 180px auto;
+    gap:10px;
+    margin-bottom:10px;
+    align-items:center;
+  `;
+
+  row.innerHTML = `
+    <input
+      type="text"
+      class="inventory-category"
+      placeholder="Inventory category"
+    >
+
+    <input
+      type="number"
+      class="inventory-value"
+      placeholder="Estimated value"
+      min="0"
+      step="0.01"
+      oninput="calculateInventoryTotal()"
+    >
+
+    <button
+      type="button"
+      class="secondary-btn"
+      onclick="removeInventoryItem(this)"
+    >
+      Remove
+    </button>
+  `;
+
+  container.appendChild(row);
+
+  calculateInventoryTotal();
+};
+
+
+// ------------------------------------------------------
+// REMOVE INVENTORY ITEM
+// ------------------------------------------------------
+
+window.removeInventoryItem = function (button) {
+
+  const row = button.closest(".inventory-item-row");
+
+  if (!row) return;
+
+  const container = document.getElementById("inventoryItemsContainer");
+
+  // Keep at least one inventory row
+  if (container && container.querySelectorAll(".inventory-item-row").length <= 1) {
+
+    const category = row.querySelector(".inventory-category");
+    const value = row.querySelector(".inventory-value");
+
+    if (category) category.value = "";
+    if (value) value.value = "";
+
+  } else {
+
+    row.remove();
+
+  }
+
+  calculateInventoryTotal();
+};
+
+
+// ------------------------------------------------------
+// CALCULATE TOTAL INVENTORY VALUE
+// ------------------------------------------------------
+
+window.calculateInventoryTotal = function () {
+
+  const values = document.querySelectorAll(".inventory-value");
+
+  let total = 0;
+
+  values.forEach(function (input) {
+
+    const value = Number(input.value) || 0;
+
+    total += value;
+
+  });
+
+  const totalDisplay = document.getElementById("inventoryTotalValue");
+
+  if (totalDisplay) {
+    totalDisplay.textContent = formatInventoryCurrency(total);
+  }
+
+  // Also update Current Inventory Value
+  const currentInventoryValue =
+    document.getElementById("currentInventoryValue");
+
+  if (currentInventoryValue && total > 0) {
+    currentInventoryValue.value = total.toFixed(2);
+
+    calculateInventoryMetrics();
+  }
+
+};
+
+
+// ------------------------------------------------------
+// INVENTORY FINANCIAL CALCULATIONS
+// ------------------------------------------------------
+
+window.calculateInventoryMetrics = function () {
+
+  const inventoryValue =
+    Number(document.getElementById("currentInventoryValue")?.value) || 0;
+
+  const monthlyPurchases =
+    Number(document.getElementById("averageMonthlyPurchases")?.value) || 0;
+
+  const monthlyCOGS =
+    Number(document.getElementById("averageMonthlyCOGS")?.value) || 0;
+
+
+  // Monthly Turnover
+  let monthlyTurnover = 0;
+
+  if (inventoryValue > 0) {
+    monthlyTurnover = monthlyCOGS / inventoryValue;
+  }
+
+
+  // Annual Turnover
+  let annualTurnover = monthlyTurnover * 12;
+
+
+  // Holding Period
+  let holdingPeriod = 0;
+
+  if (annualTurnover > 0) {
+    holdingPeriod = 365 / annualTurnover;
+  }
+
+
+  // Rotation Classification
+  let classification = "";
+
+  if (annualTurnover <= 0) {
+
+    classification = "Not Available";
+
+  } else if (annualTurnover >= 12) {
+
+    classification = "Very Fast";
+
+  } else if (annualTurnover >= 6) {
+
+    classification = "Fast";
+
+  } else if (annualTurnover >= 3) {
+
+    classification = "Moderate";
+
+  } else {
+
+    classification = "Slow";
+
+  }
+
+
+  // Display Monthly Turnover
+  const monthlyTurnoverField =
+    document.getElementById("monthlyTurnover");
+
+  if (monthlyTurnoverField) {
+    monthlyTurnoverField.value =
+      monthlyTurnover.toFixed(2);
+  }
+
+
+  // Display Annual Turnover
+  const annualTurnoverField =
+    document.getElementById("annualTurnover");
+
+  if (annualTurnoverField) {
+    annualTurnoverField.value =
+      annualTurnover.toFixed(2);
+  }
+
+
+  // Display Holding Period
+  const holdingPeriodField =
+    document.getElementById("holdingPeriodDays");
+
+  if (holdingPeriodField) {
+    holdingPeriodField.value =
+      holdingPeriod > 0
+        ? holdingPeriod.toFixed(0)
+        : "0";
+  }
+
+
+  // Display Classification
+  const classificationField =
+    document.getElementById("rotationClassification");
+
+  if (classificationField) {
+    classificationField.value = classification;
+  }
+
+};
+
+
+// ------------------------------------------------------
+// INITIALISE INVENTORY CALCULATIONS
+// ------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  calculateInventoryTotal();
+
+  calculateInventoryMetrics();
+
+});
+/* =========================================================
+   INVENTORY ASSESSMENT
+   ========================================================= */
+
+function formatInventoryCurrency(value) {
+  const number = Number(value) || 0;
+
+  return "₦" + number.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+
+/* =========================
+   ADD INVENTORY ITEM
+   ========================= */
+
+window.addInventoryItem = function () {
+
+  const container = document.getElementById("inventoryItemsContainer");
+
+  if (!container) return;
+
+  const row = document.createElement("div");
+
+  row.className = "inventory-item-row";
+
+  row.style.display = "grid";
+  row.style.gridTemplateColumns = "1fr 180px auto";
+  row.style.gap = "10px";
+  row.style.marginBottom = "10px";
+  row.style.alignItems = "center";
+
+  row.innerHTML = `
+    <input
+      type="text"
+      class="inventory-category"
+      placeholder="Inventory category"
+    >
+
+    <input
+      type="number"
+      class="inventory-value"
+      placeholder="Estimated value"
+      min="0"
+      step="0.01"
+      oninput="calculateInventoryTotal()"
+    >
+
+    <button
+      type="button"
+      class="secondary-btn"
+      onclick="removeInventoryItem(this)"
+    >
+      Remove
+    </button>
+  `;
+
+  container.appendChild(row);
+
+  calculateInventoryTotal();
+};
+
+
+/* =========================
+   REMOVE INVENTORY ITEM
+   ========================= */
+
+window.removeInventoryItem = function (button) {
+
+  const row = button.closest(".inventory-item-row");
+
+  if (row) {
+    row.remove();
+  }
+
+  calculateInventoryTotal();
+};
+
+
+/* =========================
+   CALCULATE TOTAL INVENTORY
+   ========================= */
+
+window.calculateInventoryTotal = function () {
+
+  const values = document.querySelectorAll(".inventory-value");
+
+  let total = 0;
+
+  values.forEach(function (input) {
+
+    const value = Number(input.value) || 0;
+
+    total += value;
+
+  });
+
+  const totalDisplay =
+    document.getElementById("inventoryTotalValue");
+
+  if (totalDisplay) {
+
+    totalDisplay.textContent =
+      formatInventoryCurrency(total);
+
+  }
+
+  /*
+     Automatically update Current Inventory Value
+     when inventory items have been entered.
+  */
+
+  const currentInventoryValue =
+    document.getElementById("currentInventoryValue");
+
+  if (currentInventoryValue && total > 0) {
+
+    currentInventoryValue.value =
+      total.toFixed(2);
+
+  }
+
+  calculateInventoryMetrics();
+};
+
+
+/* =========================
+   CALCULATE INVENTORY METRICS
+   ========================= */
+
+window.calculateInventoryMetrics = function () {
+
+  const inventoryValue =
+    Number(
+      document.getElementById("currentInventoryValue")?.value
+    ) || 0;
+
+  const monthlyPurchases =
+    Number(
+      document.getElementById("averageMonthlyPurchases")?.value
+    ) || 0;
+
+  const monthlyCOGS =
+    Number(
+      document.getElementById("averageMonthlyCOGS")?.value
+    ) || 0;
+
+
+  /*
+     Monthly Inventory Turnover
+
+     = Monthly COGS ÷ Current Inventory
+  */
+
+  let monthlyTurnover = 0;
+
+  if (inventoryValue > 0 && monthlyCOGS > 0) {
+
+    monthlyTurnover =
+      monthlyCOGS / inventoryValue;
+
+  }
+
+
+  /*
+     Annual Inventory Turnover
+
+     = Monthly Turnover × 12
+  */
+
+  let annualTurnover =
+    monthlyTurnover * 12;
+
+
+  /*
+     Holding Period
+
+     = 365 ÷ Annual Turnover
+  */
+
+  let holdingPeriodDays = 0;
+
+  if (annualTurnover > 0) {
+
+    holdingPeriodDays =
+      365 / annualTurnover;
+
+  }
+
+
+  /*
+     Rotation Classification
+  */
+
+  let classification = "";
+
+  if (annualTurnover <= 0) {
+
+    classification = "Not Available";
+
+  } else if (annualTurnover >= 12) {
+
+    classification = "Very Fast";
+
+  } else if (annualTurnover >= 6) {
+
+    classification = "Fast";
+
+  } else if (annualTurnover >= 3) {
+
+    classification = "Moderate";
+
+  } else {
+
+    classification = "Slow";
+
+  }
+
+
+  const monthlyTurnoverField =
+    document.getElementById("monthlyTurnover");
+
+  const annualTurnoverField =
+    document.getElementById("annualTurnover");
+
+  const holdingPeriodField =
+    document.getElementById("holdingPeriodDays");
+
+  const classificationField =
+    document.getElementById("rotationClassification");
+
+
+  if (monthlyTurnoverField) {
+
+    monthlyTurnoverField.value =
+      monthlyTurnover.toFixed(2);
+
+  }
+
+
+  if (annualTurnoverField) {
+
+    annualTurnoverField.value =
+      annualTurnover.toFixed(2);
+
+  }
+
+
+  if (holdingPeriodField) {
+
+    holdingPeriodField.value =
+      holdingPeriodDays > 0
+        ? holdingPeriodDays.toFixed(0)
+        : "0";
+
+  }
+
+
+  if (classificationField) {
+
+    classificationField.value =
+      classification;
+
+  }
+};
+
+
+/* =========================
+   SAVE INVENTORY ASSESSMENT
+   ========================= */
+
+window.saveInventoryAssessment = async function (loanId) {
+
+  try {
+
+    const { data: sessionData } =
+      await supabaseClient.auth.getSession();
+
+    const session =
+      sessionData?.session;
+
+
+    if (!session) {
+
+      showLogin();
+
+      return;
+
+    }
+
+
+    const message =
+      document.getElementById("inventorySaveMessage");
+
+
+    if (!loanId) {
+
+      if (message) {
+
+        message.textContent =
+          "Loan application ID is missing.";
+
+      }
+
+      return;
+
+    }
+
+
+    /*
+       Collect inventory items
+    */
+
+    const rows =
+      document.querySelectorAll(
+        "#inventoryItemsContainer .inventory-item-row"
+      );
+
+
+    const inventoryItems = [];
+
+    let invalidItem = false;
+
+
+    rows.forEach(function (row) {
+
+      const category =
+        row.querySelector(".inventory-category")?.value.trim();
+
+      const value =
+        Number(
+          row.querySelector(".inventory-value")?.value
+        ) || 0;
+
+
+      /*
+         Ignore completely empty rows
+      */
+
+      if (!category && value === 0) {
+
+        return;
+
+      }
+
+
+      if (!category) {
+
+        invalidItem = true;
+
+        return;
+
+      }
+
+
+      inventoryItems.push({
+
+        category: category,
+
+        estimated_value: value
+
+      });
+
+    });
+
+
+    if (invalidItem) {
+
+      if (message) {
+
+        message.textContent =
+          "Please enter an inventory category for every inventory item.";
+
+      }
+
+      return;
+
+    }
+
+
+    /*
+       Calculate total inventory value
+    */
+
+    let totalInventoryValue = 0;
+
+    inventoryItems.forEach(function (item) {
+
+      totalInventoryValue +=
+        Number(item.estimated_value) || 0;
+
+    });
+
+
+    /*
+       Get financial assessment values
+    */
+
+    const currentInventoryInput =
+      document.getElementById(
+        "currentInventoryValue"
+      );
+
+    const currentInventoryValue =
+      totalInventoryValue > 0
+        ? totalInventoryValue
+        : Number(currentInventoryInput?.value) || 0;
+
+
+    const averageMonthlyPurchases =
+      Number(
+        document.getElementById(
+          "averageMonthlyPurchases"
+        )?.value
+      ) || 0;
+
+
+    const averageMonthlyCOGS =
+      Number(
+        document.getElementById(
+          "averageMonthlyCOGS"
+        )?.value
+      ) || 0;
+
+
+    const monthlyTurnover =
+      Number(
+        document.getElementById(
+          "monthlyTurnover"
+        )?.value
+      ) || 0;
+
+
+    const annualTurnover =
+      Number(
+        document.getElementById(
+          "annualTurnover"
+        )?.value
+      ) || 0;
+
+
+    const holdingPeriodDays =
+      Number(
+        document.getElementById(
+          "holdingPeriodDays"
+        )?.value
+      ) || 0;
+
+
+    const rotationClassification =
+      document.getElementById(
+        "rotationClassification"
+      )?.value || null;
+
+
+    /*
+       Helper for text fields
+    */
+
+    function getTextValue(id) {
+
+      const element =
+        document.getElementById(id);
+
+      if (!element) return null;
+
+      const value =
+        element.value?.trim();
+
+      return value || null;
+
+    }
+
+
+    /*
+       Helper for boolean fields
+    */
+
+    function getBooleanValue(id) {
+
+      const element =
+        document.getElementById(id);
+
+      if (!element || element.value === "") {
+
+        return null;
+
+      }
+
+      return element.value === "true";
+
+    }
+
+
+    /*
+       Build inventory assessment record
+    */
+
+    const inventoryData = {
+
+      loan_application_id: loanId,
+
+      current_inventory_value:
+        currentInventoryValue,
+
+      average_monthly_purchases:
+        averageMonthlyPurchases || null,
+
+      average_monthly_cogs:
+        averageMonthlyCOGS || null,
+
+      monthly_turnover:
+        monthlyTurnover || null,
+
+      annual_turnover:
+        annualTurnover || null,
+
+      holding_period_days:
+        holdingPeriodDays || null,
+
+      rotation_classification:
+        rotationClassification,
+
+      stock_level:
+        getTextValue("stockLevel"),
+
+      stock_movement:
+        getTextValue("stockMovement"),
+
+      slow_moving_stock:
+        getBooleanValue("slowMovingStock"),
+
+      obsolete_damaged_stock:
+        getBooleanValue("obsoleteDamagedStock"),
+
+      stock_out_frequency:
+        getTextValue("stockOutFrequency"),
+
+      seasonal_stock:
+        getBooleanValue("seasonalStock"),
+
+      inventory_observation:
+        getTextValue("inventoryObservation"),
+
+      major_suppliers:
+        getTextValue("majorSuppliers"),
+
+      number_of_major_suppliers:
+        Number(
+          document.getElementById(
+            "numberOfMajorSuppliers"
+          )?.value
+        ) || null,
+
+      supplier_credit_available:
+        getBooleanValue(
+          "supplierCreditAvailable"
+        ),
+
+      average_supplier_credit_period:
+        getTextValue(
+          "averageSupplierCreditPeriod"
+        ),
+
+      supplier_dependency:
+        getTextValue(
+          "supplierDependency"
+        ),
+
+      updated_by:
+        session.user.id,
+
+      updated_at:
+        new Date().toISOString()
+
+    };
+
+
+    /*
+       Check whether an assessment already exists
+    */
+
+    const {
+      data: existingAssessment,
+      error: findError
+    } = await supabaseClient
+
+      .from("inventory_assessments")
+
+      .select("id")
+
+      .eq(
+        "loan_application_id",
+        loanId
+      )
+
+      .maybeSingle();
+
+
+    if (findError) {
+
+      throw findError;
+
+    }
+
+
+    let assessmentId;
+
+
+    /*
+       UPDATE existing assessment
+    */
+
+    if (existingAssessment) {
+
+      assessmentId =
+        existingAssessment.id;
+
+
+      const {
+        error: updateError
+      } = await supabaseClient
+
+        .from("inventory_assessments")
+
+        .update(inventoryData)
+
+        .eq(
+          "id",
+          assessmentId
+        );
+
+
+      if (updateError) {
+
+        throw updateError;
+
+      }
+
+    }
+
+
+    /*
+       INSERT new assessment
+    */
+
+    else {
+
+      const newInventoryData = {
+
+        ...inventoryData,
+
+        created_by:
+          session.user.id,
+
+        created_at:
+          new Date().toISOString()
+
+      };
+
+
+      const {
+        data: insertedAssessment,
+        error: insertError
+      } = await supabaseClient
+
+        .from("inventory_assessments")
+
+        .insert(newInventoryData)
+
+        .select("id")
+
+        .single();
+
+
+      if (insertError) {
+
+        throw insertError;
+
+      }
+
+
+      assessmentId =
+        insertedAssessment.id;
+
+    }
+
+
+    /*
+       Delete existing inventory items
+       so edited items can be saved cleanly.
+    */
+
+    const {
+      error: deleteError
+    } = await supabaseClient
+
+      .from("inventory_items")
+
+      .delete()
+
+      .eq(
+        "assessment_id",
+        assessmentId
+      );
+
+
+    if (deleteError) {
+
+      throw deleteError;
+
+    }
+
+
+    /*
+       Save inventory items
+    */
+
+    if (inventoryItems.length > 0) {
+
+      const itemsToInsert =
+        inventoryItems.map(function (item) {
+
+          return {
+
+            assessment_id:
+              assessmentId,
+
+            category:
+              item.category,
+
+            estimated_value:
+              item.estimated_value
+
+          };
+
+        });
+
+
+      const {
+        error: itemsError
+      } = await supabaseClient
+
+        .from("inventory_items")
+
+        .insert(itemsToInsert);
+
+
+      if (itemsError) {
+
+        throw itemsError;
+
+      }
+
+    }
+
+
+    /*
+       Update displayed total
+    */
+
+    const totalDisplay =
+      document.getElementById(
+        "inventoryTotalValue"
+      );
+
+
+    if (totalDisplay) {
+
+      totalDisplay.textContent =
+        formatInventoryCurrency(
+          currentInventoryValue
+        );
+
+    }
+
+
+    /*
+       Success message
+    */
+
+    if (message) {
+
+      message.textContent =
+        "Inventory Assessment saved successfully.";
+
+      message.style.color =
+        "green";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Inventory assessment error:",
+      error
+    );
+
+
+    const message =
+      document.getElementById(
+        "inventorySaveMessage"
+      );
+
+
+    if (message) {
+
+      message.textContent =
+        "Unable to save Inventory Assessment: " +
+        (error.message || "Unknown error");
+
+      message.style.color =
+        "red";
+
+    }
+
+  }
+
+};
+
+
+/* =========================
+   INITIAL INVENTORY CALCULATION
+   ========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    if (
+      document.getElementById(
+        "inventoryItemsContainer"
+      )
+    ) {
+
+      window.calculateInventoryTotal();
+
+    }
+
+    if (
+      document.getElementById(
+        "currentInventoryValue"
+      )
+    ) {
+
+      window.calculateInventoryMetrics();
+
+    }
+
+  }
+);
