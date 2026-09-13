@@ -5226,13 +5226,12 @@ async function showLoanDetails(loanId) {
   ">
 
     <button
-      type="button"
-      class="primary-btn"
-      onclick="saveInventoryAssessment()"
-    >
-      Save Inventory Assessment
-    </button>
-
+  type="button"
+  class="primary-btn"
+  onclick="saveInventoryAssessment('${loan.id}')"
+>
+  Save Inventory Assessment
+</button>
   </div>
 
   <div
@@ -6288,3 +6287,255 @@ window.calculateFinancialAssessment = function () {
   }
 
 };
+// ======================================================
+// SECTION 6 - INVENTORY ASSESSMENT
+// ======================================================
+
+// Format numbers as Nigerian Naira
+function formatInventoryCurrency(value) {
+  const number = Number(value) || 0;
+
+  return "₦" + number.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+
+// ------------------------------------------------------
+// ADD INVENTORY ITEM
+// ------------------------------------------------------
+
+window.addInventoryItem = function () {
+
+  const container = document.getElementById("inventoryItemsContainer");
+
+  if (!container) return;
+
+  const row = document.createElement("div");
+
+  row.className = "inventory-item-row";
+
+  row.style.cssText = `
+    display:grid;
+    grid-template-columns:1fr 180px auto;
+    gap:10px;
+    margin-bottom:10px;
+    align-items:center;
+  `;
+
+  row.innerHTML = `
+    <input
+      type="text"
+      class="inventory-category"
+      placeholder="Inventory category"
+    >
+
+    <input
+      type="number"
+      class="inventory-value"
+      placeholder="Estimated value"
+      min="0"
+      step="0.01"
+      oninput="calculateInventoryTotal()"
+    >
+
+    <button
+      type="button"
+      class="secondary-btn"
+      onclick="removeInventoryItem(this)"
+    >
+      Remove
+    </button>
+  `;
+
+  container.appendChild(row);
+
+  calculateInventoryTotal();
+};
+
+
+// ------------------------------------------------------
+// REMOVE INVENTORY ITEM
+// ------------------------------------------------------
+
+window.removeInventoryItem = function (button) {
+
+  const row = button.closest(".inventory-item-row");
+
+  if (!row) return;
+
+  const container = document.getElementById("inventoryItemsContainer");
+
+  // Keep at least one inventory row
+  if (container && container.querySelectorAll(".inventory-item-row").length <= 1) {
+
+    const category = row.querySelector(".inventory-category");
+    const value = row.querySelector(".inventory-value");
+
+    if (category) category.value = "";
+    if (value) value.value = "";
+
+  } else {
+
+    row.remove();
+
+  }
+
+  calculateInventoryTotal();
+};
+
+
+// ------------------------------------------------------
+// CALCULATE TOTAL INVENTORY VALUE
+// ------------------------------------------------------
+
+window.calculateInventoryTotal = function () {
+
+  const values = document.querySelectorAll(".inventory-value");
+
+  let total = 0;
+
+  values.forEach(function (input) {
+
+    const value = Number(input.value) || 0;
+
+    total += value;
+
+  });
+
+  const totalDisplay = document.getElementById("inventoryTotalValue");
+
+  if (totalDisplay) {
+    totalDisplay.textContent = formatInventoryCurrency(total);
+  }
+
+  // Also update Current Inventory Value
+  const currentInventoryValue =
+    document.getElementById("currentInventoryValue");
+
+  if (currentInventoryValue && total > 0) {
+    currentInventoryValue.value = total.toFixed(2);
+
+    calculateInventoryMetrics();
+  }
+
+};
+
+
+// ------------------------------------------------------
+// INVENTORY FINANCIAL CALCULATIONS
+// ------------------------------------------------------
+
+window.calculateInventoryMetrics = function () {
+
+  const inventoryValue =
+    Number(document.getElementById("currentInventoryValue")?.value) || 0;
+
+  const monthlyPurchases =
+    Number(document.getElementById("averageMonthlyPurchases")?.value) || 0;
+
+  const monthlyCOGS =
+    Number(document.getElementById("averageMonthlyCOGS")?.value) || 0;
+
+
+  // Monthly Turnover
+  let monthlyTurnover = 0;
+
+  if (inventoryValue > 0) {
+    monthlyTurnover = monthlyCOGS / inventoryValue;
+  }
+
+
+  // Annual Turnover
+  let annualTurnover = monthlyTurnover * 12;
+
+
+  // Holding Period
+  let holdingPeriod = 0;
+
+  if (annualTurnover > 0) {
+    holdingPeriod = 365 / annualTurnover;
+  }
+
+
+  // Rotation Classification
+  let classification = "";
+
+  if (annualTurnover <= 0) {
+
+    classification = "Not Available";
+
+  } else if (annualTurnover >= 12) {
+
+    classification = "Very Fast";
+
+  } else if (annualTurnover >= 6) {
+
+    classification = "Fast";
+
+  } else if (annualTurnover >= 3) {
+
+    classification = "Moderate";
+
+  } else {
+
+    classification = "Slow";
+
+  }
+
+
+  // Display Monthly Turnover
+  const monthlyTurnoverField =
+    document.getElementById("monthlyTurnover");
+
+  if (monthlyTurnoverField) {
+    monthlyTurnoverField.value =
+      monthlyTurnover.toFixed(2);
+  }
+
+
+  // Display Annual Turnover
+  const annualTurnoverField =
+    document.getElementById("annualTurnover");
+
+  if (annualTurnoverField) {
+    annualTurnoverField.value =
+      annualTurnover.toFixed(2);
+  }
+
+
+  // Display Holding Period
+  const holdingPeriodField =
+    document.getElementById("holdingPeriodDays");
+
+  if (holdingPeriodField) {
+    holdingPeriodField.value =
+      holdingPeriod > 0
+        ? holdingPeriod.toFixed(0)
+        : "0";
+  }
+
+
+  // Display Classification
+  const classificationField =
+    document.getElementById("rotationClassification");
+
+  if (classificationField) {
+    classificationField.value = classification;
+  }
+
+};
+
+
+// ------------------------------------------------------
+// INITIALISE INVENTORY CALCULATIONS
+// ------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  calculateInventoryTotal();
+
+  calculateInventoryMetrics();
+
+});
