@@ -6287,7 +6287,7 @@ window.calculateFinancialAssessment = function () {
   }
 
 };
-}
+
 
 
 // ======================================================
