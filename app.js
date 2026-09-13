@@ -5434,37 +5434,148 @@ async function showLoanDetails(loanId) {
 
 </div>
 
-  <!-- 8. GUARANTORS -->
+ <!-- 8. GUARANTORS -->
+
+<div
+  class="card"
+  id="guarantorSection"
+  style="margin-top:20px;"
+>
+
+  <h3>8. Guarantors</h3>
+
+  <p style="margin-top:8px;">
+    Record the guarantors provided for this loan application.
+  </p>
 
   <div
-    class="card"
-    id="guarantorSection"
-    style="margin-top:20px;"
+    id="guarantorsContainer"
+    style="margin-top:18px;"
   >
 
-    <h3>8. Guarantors</h3>
+    <!-- GUARANTOR 1 -->
 
-    <p style="margin-top:8px;">
-      Review guarantors attached to this loan application.
-    </p>
+    <div
+      class="guarantor-row"
+      style="
+        padding:18px;
+        background:#f8f9fa;
+        border-radius:8px;
+        margin-bottom:15px;
+      "
+    >
 
-    <div style="
-      margin-top:18px;
-      padding:18px;
-      background:#f8f9fa;
-      border-radius:8px;
-    ">
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:15px;
+      ">
 
-      <strong>Guarantor module</strong>
+        <strong>Guarantor 1</strong>
 
-      <p style="margin-top:8px;">
-        Guarantor details and verification will be displayed here.
-      </p>
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="removeGuarantor(this)"
+        >
+          Remove
+        </button>
+
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+        gap:15px;
+      ">
+
+        <div>
+          <label>Full Name</label>
+          <input
+            type="text"
+            class="guarantor-full-name"
+            placeholder="Full name"
+          >
+        </div>
+
+        <div>
+          <label>Phone Number</label>
+          <input
+            type="text"
+            class="guarantor-phone"
+            placeholder="Phone number"
+          >
+        </div>
+
+        <div>
+          <label>Relationship</label>
+          <input
+            type="text"
+            class="guarantor-relationship"
+            placeholder="Relationship with customer"
+          >
+        </div>
+
+        <div>
+          <label>Address</label>
+          <input
+            type="text"
+            class="guarantor-address"
+            placeholder="Residential address"
+          >
+        </div>
+
+      </div>
 
     </div>
 
   </div>
 
+
+  <!-- ADD GUARANTOR -->
+
+  <div style="margin-top:10px;">
+
+    <button
+      type="button"
+      class="secondary-btn"
+      onclick="addGuarantor()"
+    >
+      + Add Guarantor
+    </button>
+
+  </div>
+
+
+  <!-- SAVE -->
+
+  <div style="
+    margin-top:20px;
+    padding:18px;
+    text-align:right;
+  ">
+
+    <button
+      type="button"
+      class="primary-btn"
+      onclick="saveGuarantors('${loan.id}')"
+    >
+      Save Guarantors
+    </button>
+
+  </div>
+
+
+  <div
+    id="guarantorSaveMessage"
+    style="
+      margin-top:10px;
+      font-weight:bold;
+    "
+  ></div>
+
+</div>
 
   <!-- 9. CREDIT RECOMMENDATION -->
 
@@ -7800,6 +7911,508 @@ document.addEventListener(
 
       }
     );
+
+  }
+);
+// ======================================================
+// SECTION 8 - GUARANTORS
+// ======================================================
+
+
+// ------------------------------------------------------
+// ADD GUARANTOR
+// ------------------------------------------------------
+
+window.addGuarantor = function () {
+
+  const container =
+    document.getElementById("guarantorsContainer");
+
+  if (!container) {
+    console.error("guarantorsContainer not found");
+    return;
+  }
+
+  const existingRows =
+    container.querySelectorAll(".guarantor-row");
+
+  const guarantorNumber =
+    existingRows.length + 1;
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "guarantor-row";
+
+  row.style.cssText = `
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+    margin-bottom:15px;
+  `;
+
+  row.innerHTML = `
+
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:15px;
+    ">
+
+      <strong>
+        Guarantor ${guarantorNumber}
+      </strong>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="removeGuarantor(this)"
+      >
+        Remove
+      </button>
+
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:15px;
+    ">
+
+      <div>
+        <label>Full Name</label>
+
+        <input
+          type="text"
+          class="guarantor-full-name"
+          placeholder="Full name"
+        >
+      </div>
+
+
+      <div>
+        <label>Phone Number</label>
+
+        <input
+          type="text"
+          class="guarantor-phone"
+          placeholder="Phone number"
+        >
+      </div>
+
+
+      <div>
+        <label>Relationship</label>
+
+        <input
+          type="text"
+          class="guarantor-relationship"
+          placeholder="Relationship with customer"
+        >
+      </div>
+
+
+      <div>
+        <label>Address</label>
+
+        <input
+          type="text"
+          class="guarantor-address"
+          placeholder="Residential address"
+        >
+      </div>
+
+    </div>
+  `;
+
+  container.appendChild(row);
+
+};
+
+
+// ------------------------------------------------------
+// REMOVE GUARANTOR
+// ------------------------------------------------------
+
+window.removeGuarantor = function (button) {
+
+  const row =
+    button.closest(".guarantor-row");
+
+  if (row) {
+    row.remove();
+  }
+
+  renumberGuarantors();
+
+};
+
+
+// ------------------------------------------------------
+// RENUMBER GUARANTORS
+// ------------------------------------------------------
+
+function renumberGuarantors() {
+
+  const rows =
+    document.querySelectorAll(
+      "#guarantorsContainer .guarantor-row"
+    );
+
+  rows.forEach(function (row, index) {
+
+    const title =
+      row.querySelector("strong");
+
+    if (title) {
+
+      title.textContent =
+        "Guarantor " + (index + 1);
+
+    }
+
+  });
+
+}
+
+
+// ------------------------------------------------------
+// SAVE GUARANTORS
+// ------------------------------------------------------
+
+window.saveGuarantors =
+  async function (loanId) {
+
+  const message =
+    document.getElementById(
+      "guarantorSaveMessage"
+    );
+
+
+  try {
+
+    // ----------------------------------------------
+    // CHECK LOGIN SESSION
+    // ----------------------------------------------
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+
+    const session =
+      sessionData?.session;
+
+
+    if (!session) {
+
+      if (message) {
+
+        message.textContent =
+          "Your session has expired. Please log in again.";
+
+        message.style.color =
+          "red";
+
+      }
+
+      return;
+
+    }
+
+
+    // ----------------------------------------------
+    // CHECK LOAN ID
+    // ----------------------------------------------
+
+    if (!loanId) {
+
+      if (message) {
+
+        message.textContent =
+          "Loan application ID is missing.";
+
+        message.style.color =
+          "red";
+
+      }
+
+      return;
+
+    }
+
+
+    // ----------------------------------------------
+    // GET CUSTOMER ID FROM LOAN APPLICATION
+    // ----------------------------------------------
+
+    const {
+      data: loanApplication,
+      error: loanError
+    } =
+      await supabaseClient
+        .from("loan_applications")
+        .select("customer_id")
+        .eq("id", loanId)
+        .maybeSingle();
+
+
+    if (loanError) {
+      throw loanError;
+    }
+
+
+    if (!loanApplication) {
+
+      if (message) {
+
+        message.textContent =
+          "Loan application could not be found.";
+
+        message.style.color =
+          "red";
+
+      }
+
+      return;
+
+    }
+
+
+    const customerId =
+      loanApplication.customer_id;
+
+
+    if (!customerId) {
+
+      if (message) {
+
+        message.textContent =
+          "Customer ID is missing from this loan application.";
+
+        message.style.color =
+          "red";
+
+      }
+
+      return;
+
+    }
+
+
+    // ----------------------------------------------
+    // READ GUARANTOR ROWS
+    // ----------------------------------------------
+
+    const rows =
+      document.querySelectorAll(
+        "#guarantorsContainer .guarantor-row"
+      );
+
+
+    const guarantors = [];
+
+
+    for (
+      let index = 0;
+      index < rows.length;
+      index++
+    ) {
+
+      const row = rows[index];
+
+
+      const fullName =
+        row.querySelector(
+          ".guarantor-full-name"
+        )?.value.trim();
+
+
+      const phoneNumber =
+        row.querySelector(
+          ".guarantor-phone"
+        )?.value.trim() || null;
+
+
+      const relationship =
+        row.querySelector(
+          ".guarantor-relationship"
+        )?.value.trim() || null;
+
+
+      const address =
+        row.querySelector(
+          ".guarantor-address"
+        )?.value.trim() || null;
+
+
+      // --------------------------------------------
+      // NAME IS REQUIRED
+      // --------------------------------------------
+
+      if (!fullName) {
+
+        if (message) {
+
+          message.textContent =
+            "Please enter the full name for Guarantor " +
+            (index + 1) +
+            ".";
+
+          message.style.color =
+            "red";
+
+        }
+
+        return;
+
+      }
+
+
+      guarantors.push({
+
+        customer_id:
+          customerId,
+
+        loan_application_id:
+          loanId,
+
+        full_name:
+          fullName,
+
+        address:
+          address,
+
+        phone_number:
+          phoneNumber,
+
+        relationship:
+          relationship,
+
+        guarantor_number:
+          index + 1,
+
+        status:
+          "active"
+
+      });
+
+    }
+
+
+    // ----------------------------------------------
+    // DELETE PREVIOUS GUARANTORS
+    // ----------------------------------------------
+
+    const {
+      error: deleteError
+    } =
+      await supabaseClient
+        .from("guarantors")
+        .delete()
+        .eq(
+          "loan_application_id",
+          loanId
+        );
+
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+
+    // ----------------------------------------------
+    // INSERT CURRENT GUARANTORS
+    // ----------------------------------------------
+
+    if (guarantors.length > 0) {
+
+      const {
+        error: insertError
+      } =
+        await supabaseClient
+          .from("guarantors")
+          .insert(
+            guarantors
+          );
+
+
+      if (insertError) {
+        throw insertError;
+      }
+
+    }
+
+
+    // ----------------------------------------------
+    // SUCCESS
+    // ----------------------------------------------
+
+    if (message) {
+
+      message.textContent =
+        guarantors.length +
+        " guarantor" +
+        (guarantors.length === 1 ? "" : "s") +
+        " saved successfully.";
+
+      message.style.color =
+        "green";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Guarantors Save Error:",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Unable to save guarantors: " +
+        (error.message || "Unknown error");
+
+      message.style.color =
+        "red";
+
+    }
+
+  }
+
+};
+
+
+// ------------------------------------------------------
+// INITIALISE SECTION 8
+// ------------------------------------------------------
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    const container =
+      document.getElementById(
+        "guarantorsContainer"
+      );
+
+    if (!container) {
+      return;
+    }
+
+    renumberGuarantors();
 
   }
 );
