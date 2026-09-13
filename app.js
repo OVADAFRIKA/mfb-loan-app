@@ -5245,38 +5245,194 @@ async function showLoanDetails(loanId) {
 </div>
 
 
-  <!-- 7. EXISTING LOANS -->
+ <!-- 7. EXISTING LOAN OBLIGATIONS -->
 
-  <div
-    class="card"
-    id="existingLoansSection"
-    style="margin-top:20px;"
-  >
+<div
+  class="card"
+  id="existingLoansSection"
+  style="margin-top:20px;"
+>
 
-    <h3>7. Existing Loans & Obligations</h3>
+  <h3>7. Existing Loan Obligations</h3>
 
-    <p style="margin-top:8px;">
-      Review existing loans, outstanding obligations and repayment history.
+  <p style="margin-top:8px;">
+    Record the customer's existing loans and current repayment obligations.
+  </p>
+
+
+  <!-- EXISTING LOANS -->
+
+  <div style="
+    margin-top:18px;
+    padding:18px;
+    background:#f8f9fa;
+    border-radius:8px;
+  ">
+
+    <h4>Existing Loans</h4>
+
+    <p style="margin-top:6px;">
+      Enter all active loans or credit obligations currently held by the customer.
     </p>
+
+
+    <div
+      id="existingLoansContainer"
+      style="margin-top:15px;"
+    >
+
+      <div
+        class="existing-loan-row"
+        style="
+          display:grid;
+          grid-template-columns:1fr 180px 180px 170px auto;
+          gap:10px;
+          margin-bottom:10px;
+          align-items:center;
+        "
+      >
+
+        <input
+          type="text"
+          class="existing-loan-institution"
+          placeholder="Institution"
+        >
+
+        <input
+          type="number"
+          class="existing-loan-balance"
+          placeholder="Outstanding balance"
+          min="0"
+          step="0.01"
+          oninput="calculateExistingLoanTotals()"
+        >
+
+        <input
+          type="number"
+          class="existing-loan-repayment"
+          placeholder="Monthly repayment"
+          min="0"
+          step="0.01"
+          oninput="calculateExistingLoanTotals()"
+        >
+
+        <input
+          type="date"
+          class="existing-loan-maturity"
+        >
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="removeExistingLoan(this)"
+        >
+          Remove
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- ADD LOAN -->
+
+    <button
+      type="button"
+      class="secondary-btn"
+      style="margin-top:5px;"
+      onclick="addExistingLoan()"
+    >
+      + Add Existing Loan
+    </button>
+
+
+    <!-- TOTALS -->
 
     <div style="
       margin-top:18px;
-      padding:18px;
-      background:#f8f9fa;
-      border-radius:8px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:15px;
     ">
 
-      <strong>Existing obligations module</strong>
+      <div style="
+        padding:14px;
+        background:#ffffff;
+        border-radius:6px;
+        border:1px solid #ddd;
+      ">
 
-      <p style="margin-top:8px;">
-        Existing loans and monthly repayment obligations
-        will be incorporated into the repayment capacity calculation.
-      </p>
+        <strong>Total Outstanding Balance</strong>
+
+        <div
+          id="totalExistingLoanBalance"
+          style="
+            margin-top:6px;
+            font-size:20px;
+            font-weight:bold;
+          "
+        >
+          ₦0.00
+        </div>
+
+      </div>
+
+
+      <div style="
+        padding:14px;
+        background:#ffffff;
+        border-radius:6px;
+        border:1px solid #ddd;
+      ">
+
+        <strong>Total Monthly Repayment</strong>
+
+        <div
+          id="totalExistingLoanRepayment"
+          style="
+            margin-top:6px;
+            font-size:20px;
+            font-weight:bold;
+          "
+        >
+          ₦0.00
+        </div>
+
+      </div>
 
     </div>
 
   </div>
 
+
+  <!-- SAVE -->
+
+  <div style="
+    margin-top:20px;
+    padding:18px;
+    text-align:right;
+  ">
+
+    <button
+      type="button"
+      class="primary-btn"
+      onclick="saveExistingLoanObligations('${loan.id}')"
+    >
+      Save Existing Loan Obligations
+    </button>
+
+  </div>
+
+
+  <div
+    id="existingLoansSaveMessage"
+    style="
+      margin-top:10px;
+      font-weight:bold;
+    "
+  ></div>
+
+</div>
 
   <!-- 8. GUARANTORS -->
 
