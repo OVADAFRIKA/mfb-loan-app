@@ -4832,6 +4832,7 @@ async function showLoanDetails(loanId) {
     style="margin-top:15px;"
   ></div>
 
+</div>
 <!-- 6. INVENTORY -->
 
 <div
