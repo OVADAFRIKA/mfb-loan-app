@@ -149,6 +149,35 @@ if (error || !user) {
 
 
 // ----------------------------------------------
+// CHECK STAFF ACCOUNT STATUS
+// ----------------------------------------------
+
+if (user.status !== "active") {
+
+  await supabaseClient.auth.signOut();
+
+  root.innerHTML = `
+    <div class="login-container">
+
+      <div class="login-card">
+
+        <h1>Account Inactive</h1>
+
+        <p>
+          Your staff account is currently inactive.
+          Please contact the administrator.
+        </p>
+
+      </div>
+
+    </div>
+  `;
+
+  return;
+}
+
+
+// ----------------------------------------------
 // ROUTE SUPERVISOR TO SUPERVISOR DASHBOARD
 // ----------------------------------------------
 
@@ -157,184 +186,128 @@ if (user.role === "supervisor") {
   await showSupervisorDashboard();
 
   return;
-
 }
 
 
-if (user.status !== "active") {
-  if (error) {
+// ----------------------------------------------
+// LOAN OFFICER DASHBOARD
+// ----------------------------------------------
 
-    root.innerHTML = `
-      <div class="login-container">
+root.innerHTML = `
+  <div class="app-header">
 
-        <div class="login-card">
+    <h1>MFB Loan Appraisal System</h1>
 
-          <h1>Account Error</h1>
+    <div>
 
-          <p>
-            Your authentication account was found,
-            but your staff profile could not be loaded.
-          </p>
+      ${user.full_name}
+      &nbsp; | &nbsp;
+      ${formatRole(user.role)}
 
-          <p>
-            ${error.message}
-          </p>
-
-          <button
-            class="primary-btn"
-            onclick="logout()"
-          >
-            Sign Out
-          </button>
-
-        </div>
-
-      </div>
-    `;
-
-    return;
-  }
-
-  if (user.status !== "active") {
-
-    await supabaseClient.auth.signOut();
-
-    root.innerHTML = `
-      <div class="login-container">
-
-        <div class="login-card">
-
-          <h1>Account Inactive</h1>
-
-          <p>
-            Your staff account is currently inactive.
-            Please contact the administrator.
-          </p>
-
-        </div>
-
-      </div>
-    `;
-
-    return;
-  }
-
-  root.innerHTML = `
-    <div class="app-header">
-
-      <h1>MFB Loan Appraisal System</h1>
-
-      <div>
-
-        ${user.full_name}
-        &nbsp; | &nbsp;
-        ${formatRole(user.role)}
-
-        <button
-          class="secondary-btn"
-          onclick="logout()"
-          style="margin-left:15px;"
-        >
-          Sign Out
-        </button>
-
-      </div>
+      <button
+        class="secondary-btn"
+        onclick="logout()"
+        style="margin-left:15px;"
+      >
+        Sign Out
+      </button>
 
     </div>
 
-    <div class="app-container">
+  </div>
 
-      <aside class="sidebar">
+  <div class="app-container">
 
-        <button class="active">
-          Dashboard
-        </button>
+    <aside class="sidebar">
 
-        <button onclick="showCustomers()">
-  Customers
-</button>
+      <button class="active">
+        Dashboard
+      </button>
 
-       <button onclick="showCustomerForm()">
-  New Customer
-</button>
+      <button onclick="showCustomers()">
+        Customers
+      </button>
 
-       <button onclick="showLoanApplications()">
-  Loan Applications
-</button>
+      <button onclick="showCustomerForm()">
+        New Customer
+      </button>
 
-        <button>
-          New Loan
-        </button>
+      <button onclick="showLoanApplications()">
+        Loan Applications
+      </button>
 
-        <button>
-          Credit Appraisal
-        </button>
+      <button>
+        New Loan
+      </button>
 
-        <button>
-          Approvals
-        </button>
+      <button>
+        Credit Appraisal
+      </button>
 
-        <button>
-          Portfolio
-        </button>
+      <button>
+        Approvals
+      </button>
 
-        <button>
-          Reports
-        </button>
+      <button>
+        Portfolio
+      </button>
 
-      </aside>
+      <button>
+        Reports
+      </button>
 
-      <main class="main-content">
+    </aside>
 
-        <h2>Welcome, ${user.full_name}</h2>
+    <main class="main-content">
 
-        <p style="margin:8px 0 25px;">
-          Staff ID: ${user.staff_id}
-          &nbsp; | &nbsp;
-          Role: ${formatRole(user.role)}
+      <h2>Welcome, ${user.full_name}</h2>
+
+      <p style="margin:8px 0 25px;">
+        Staff ID: ${user.staff_id}
+        &nbsp; | &nbsp;
+        Role: ${formatRole(user.role)}
+      </p>
+
+      <div class="dashboard-grid">
+
+        <div class="stat-card">
+          <h3>Customers</h3>
+          <div class="value" id="customerCount">-</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Loan Applications</h3>
+          <div class="value" id="loanCount">-</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Under Review</h3>
+          <div class="value" id="reviewCount">-</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Approved</h3>
+          <div class="value" id="approvedCount">-</div>
+        </div>
+
+      </div>
+
+      <div class="card">
+
+        <h2>Loan Officer Dashboard</h2>
+
+        <p style="margin-top:10px;">
+          Your secure MFB loan appraisal workspace is ready.
         </p>
 
-        <div class="dashboard-grid">
+      </div>
 
-          <div class="stat-card">
-            <h3>Customers</h3>
-            <div class="value" id="customerCount">-</div>
-          </div>
+    </main>
 
-          <div class="stat-card">
-            <h3>Loan Applications</h3>
-            <div class="value" id="loanCount">-</div>
-          </div>
+  </div>
+`;
 
-          <div class="stat-card">
-            <h3>Under Review</h3>
-            <div class="value" id="reviewCount">-</div>
-          </div>
-
-          <div class="stat-card">
-            <h3>Approved</h3>
-            <div class="value" id="approvedCount">-</div>
-          </div>
-
-        </div>
-
-        <div class="card">
-
-          <h2>Loan Officer Dashboard</h2>
-
-          <p style="margin-top:10px;">
-            Your secure MFB loan appraisal workspace is ready.
-          </p>
-
-        </div>
-
-      </main>
-
-    </div>
-  `;
-
-  await loadDashboardStatistics();
-}
+await loadDashboardStatistics();}
 
 async function loadDashboardStatistics() {
 
