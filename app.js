@@ -418,59 +418,269 @@ window.viewSupervisorApplication = async function (loanId) {
 
   try {
 
+    // --------------------------------------------------
+    // LOAD LOAN APPLICATION
+    // --------------------------------------------------
+
     const {
       data: application,
-      error
+      error: applicationError
     } = await supabaseClient
       .from("loan_applications")
-      .select(`
-        *,
-        customers (
-          *
-        )
-      `)
+      .select("*")
       .eq("id", loanId)
       .maybeSingle();
 
-
-    if (error) {
-      throw error;
+    if (applicationError) {
+      throw applicationError;
     }
-
 
     if (!application) {
-
-      root.innerHTML = `
-        <div class="main-content">
-
-          <div class="card">
-
-            <h2>Loan Application Not Found</h2>
-
-            <p style="margin-top:10px;">
-              The selected loan application could not be found.
-            </p>
-
-            <button
-              class="primary-btn"
-              onclick="showSupervisorDashboard()"
-              style="margin-top:20px;"
-            >
-              Back to Supervisor Dashboard
-            </button>
-
-          </div>
-
-        </div>
-      `;
-
-      return;
+      throw new Error("Loan application was not found.");
     }
 
 
-    const customer =
-      application.customers || {};
+    // --------------------------------------------------
+    // LOAD CUSTOMER
+    // --------------------------------------------------
 
+    const {
+      data: customer,
+      error: customerError
+    } = await supabaseClient
+      .from("customers")
+      .select("*")
+      .eq("id", application.customer_id)
+      .maybeSingle();
+
+    if (customerError) {
+      throw customerError;
+    }
+
+
+    // --------------------------------------------------
+    // LOAD CUSTOMER KYC
+    // --------------------------------------------------
+
+    const {
+      data: kyc,
+      error: kycError
+    } = await supabaseClient
+      .from("customer_kyc")
+      .select("*")
+      .eq("customer_id", application.customer_id)
+      .maybeSingle();
+
+    if (kycError) {
+      throw kycError;
+    }
+
+
+    // --------------------------------------------------
+    // LOAD BUSINESS
+    // --------------------------------------------------
+
+    let business = null;
+
+    if (application.business_id) {
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .from("businesses")
+        .select("*")
+        .eq("id", application.business_id)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      business = data;
+    }
+
+
+    // --------------------------------------------------
+    // LOAD LOAN PURPOSE
+    // --------------------------------------------------
+
+    const {
+      data: loanPurpose,
+      error: purposeError
+    } = await supabaseClient
+      .from("loan_purposes")
+      .select("*")
+      .eq("loan_application_id", loanId)
+      .maybeSingle();
+
+    if (purposeError) {
+      throw purposeError;
+    }
+
+
+    // --------------------------------------------------
+    // LOAD FINANCIAL ASSESSMENT
+    // --------------------------------------------------
+
+    const {
+      data: financial,
+      error: financialError
+    } = await supabaseClient
+      .from("financial_assessments")
+      .select("*")
+      .eq("loan_application_id", loanId)
+      .maybeSingle();
+
+    if (financialError) {
+      throw financialError;
+    }
+
+
+    // --------------------------------------------------
+    // LOAD INVENTORY ASSESSMENT
+    // --------------------------------------------------
+
+    const {
+      data: inventory,
+      error: inventoryError
+    } = await supabaseClient
+      .from("inventory_assessments")
+      .select("*")
+      .eq("loan_application_id", loanId)
+      .maybeSingle();
+
+    if (inventoryError) {
+      throw inventoryError;
+    }
+
+
+    // --------------------------------------------------
+    // LOAD INVENTORY ITEMS
+    // --------------------------------------------------
+
+    let inventoryItems = [];
+
+    if (inventory?.id) {
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .from("inventory_items")
+        .select("*")
+        .eq("assessment_id", inventory.id)
+        .order("created_at", {
+          ascending: true
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      inventoryItems = data || [];
+    }
+
+
+    // --------------------------------------------------
+    // LOAD EXISTING LOAN OBLIGATIONS
+    // --------------------------------------------------
+
+    let obligations = [];
+
+    if (financial?.id) {
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .from("existing_loan_obligations")
+        .select("*")
+        .eq("financial_assessment_id", financial.id)
+        .order("created_at", {
+          ascending: true
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      obligations = data || [];
+    }
+
+
+    // --------------------------------------------------
+    // LOAD GUARANTORS
+    // --------------------------------------------------
+
+    const {
+      data: guarantors,
+      error: guarantorError
+    } = await supabaseClient
+      .from("guarantors")
+      .select("*")
+      .eq("loan_application_id", loanId)
+      .order("guarantor_number", {
+        ascending: true
+      });
+
+    if (guarantorError) {
+      throw guarantorError;
+    }
+
+
+    // --------------------------------------------------
+    // FORMATTING HELPERS
+    // --------------------------------------------------
+
+    const money = (value) => {
+
+      return "₦" + Number(
+        value || 0
+      ).toLocaleString(
+        "en-NG",
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }
+      );
+
+    };
+
+
+    const value = (value) => {
+
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return "-";
+      }
+
+      return value;
+
+    };
+
+
+    const yesNo = (value) => {
+
+      if (value === true) {
+        return "Yes";
+      }
+
+      if (value === false) {
+        return "No";
+      }
+
+      return "-";
+
+    };
+
+
+    // --------------------------------------------------
+    // RENDER SUPERVISOR REVIEW
+    // --------------------------------------------------
 
     root.innerHTML = `
 
@@ -497,6 +707,8 @@ window.viewSupervisorApplication = async function (loanId) {
 
       <div class="app-container">
 
+
+        <!-- SIDEBAR -->
 
         <aside class="sidebar">
 
@@ -529,53 +741,76 @@ window.viewSupervisorApplication = async function (loanId) {
         </aside>
 
 
+        <!-- MAIN CONTENT -->
+
         <main class="main-content">
 
 
           <h2>Supervisor Loan Review</h2>
 
           <p style="margin-top:8px;">
-            Review the submitted loan application before making a
-            Supervisor recommendation.
+            Complete appraisal file submitted by the Loan Officer.
           </p>
 
 
-          <!-- LOAN INFORMATION -->
+          <!-- ==========================================
+               1. LOAN INFORMATION
+          =========================================== -->
 
           <div class="card" style="margin-top:25px;">
 
             <h3>1. Loan Information</h3>
 
-            <div class="dashboard-grid" style="margin-top:15px;">
+            <div class="dashboard-grid" style="margin-top:18px;">
 
               <div>
                 <strong>Loan Code</strong>
-                <p>
-                  ${application.loan_code || "-"}
-                </p>
+                <p>${value(application.loan_code)}</p>
+              </div>
+
+              <div>
+                <strong>Loan Type</strong>
+                <p>${value(application.loan_type)}</p>
               </div>
 
               <div>
                 <strong>Requested Amount</strong>
-                <p>
-                  ₦${Number(
-                    application.requested_amount || 0
-                  ).toLocaleString()}
-                </p>
+                <p>${money(application.requested_amount)}</p>
               </div>
 
               <div>
                 <strong>Requested Tenor</strong>
-                <p>
-                  ${application.requested_tenor || "-"} months
-                </p>
+                <p>${value(application.requested_tenor)} months</p>
+              </div>
+
+              <div>
+                <strong>Repayment Frequency</strong>
+                <p>${value(application.repayment_frequency)}</p>
+              </div>
+
+              <div>
+                <strong>Interest Rate</strong>
+                <p>${value(application.interest_rate)}%</p>
+              </div>
+
+              <div>
+                <strong>Interest Method</strong>
+                <p>${value(application.interest_method)}</p>
+              </div>
+
+              <div>
+                <strong>Grace Period</strong>
+                <p>${value(application.grace_period)}</p>
+              </div>
+
+              <div>
+                <strong>Application Date</strong>
+                <p>${value(application.application_date)}</p>
               </div>
 
               <div>
                 <strong>Status</strong>
-                <p>
-                  ${application.status || "-"}
-                </p>
+                <p>${value(application.status)}</p>
               </div>
 
             </div>
@@ -583,40 +818,94 @@ window.viewSupervisorApplication = async function (loanId) {
           </div>
 
 
-          <!-- CUSTOMER INFORMATION -->
+          <!-- ==========================================
+               2. CUSTOMER / KYC
+          =========================================== -->
 
           <div class="card" style="margin-top:20px;">
 
             <h3>2. Customer / KYC</h3>
 
-            <div class="dashboard-grid" style="margin-top:15px;">
-
-              <div>
-                <strong>Customer Name</strong>
-                <p>
-                  ${customer.full_name || "-"}
-                </p>
-              </div>
+            <div class="dashboard-grid" style="margin-top:18px;">
 
               <div>
                 <strong>Customer Code</strong>
-                <p>
-                  ${customer.customer_code || "-"}
-                </p>
+                <p>${value(customer?.customer_code)}</p>
               </div>
 
               <div>
-                <strong>Phone</strong>
-                <p>
-                  ${customer.phone_number || customer.phone || "-"}
-                </p>
+                <strong>Full Name</strong>
+                <p>${value(customer?.full_name)}</p>
+              </div>
+
+              <div>
+                <strong>Gender</strong>
+                <p>${value(customer?.gender)}</p>
+              </div>
+
+              <div>
+                <strong>Date of Birth</strong>
+                <p>${value(customer?.date_of_birth || customer?.dob)}</p>
+              </div>
+
+              <div>
+                <strong>Marital Status</strong>
+                <p>${value(customer?.marital_status)}</p>
+              </div>
+
+              <div>
+                <strong>Dependants</strong>
+                <p>${value(customer?.dependants)}</p>
+              </div>
+
+              <div>
+                <strong>Primary Phone</strong>
+                <p>${value(customer?.phone_number || customer?.primary_phone)}</p>
               </div>
 
               <div>
                 <strong>Email</strong>
-                <p>
-                  ${customer.email || "-"}
-                </p>
+                <p>${value(customer?.email)}</p>
+              </div>
+
+              <div>
+                <strong>Residential Address</strong>
+                <p>${value(customer?.residential_address || customer?.address)}</p>
+              </div>
+
+              <div>
+                <strong>State</strong>
+                <p>${value(customer?.state)}</p>
+              </div>
+
+              <div>
+                <strong>LGA</strong>
+                <p>${value(customer?.lga)}</p>
+              </div>
+
+              <div>
+                <strong>BVN</strong>
+                <p>${value(kyc?.bvn)}</p>
+              </div>
+
+              <div>
+                <strong>NIN</strong>
+                <p>${value(kyc?.nin)}</p>
+              </div>
+
+              <div>
+                <strong>ID Type</strong>
+                <p>${value(kyc?.id_type)}</p>
+              </div>
+
+              <div>
+                <strong>ID Number</strong>
+                <p>${value(kyc?.id_number)}</p>
+              </div>
+
+              <div>
+                <strong>Verification Status</strong>
+                <p>${value(kyc?.verification_status)}</p>
               </div>
 
             </div>
@@ -624,51 +913,709 @@ window.viewSupervisorApplication = async function (loanId) {
           </div>
 
 
-          <!-- INFORMATION NOTICE -->
+          <!-- ==========================================
+               3. BUSINESS ASSESSMENT
+          =========================================== -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>3. Business Assessment</h3>
+
+            <div class="dashboard-grid" style="margin-top:18px;">
+
+              <div>
+                <strong>Business Name</strong>
+                <p>${value(business?.business_name)}</p>
+              </div>
+
+              <div>
+                <strong>Nature of Business</strong>
+                <p>${value(business?.nature_of_business)}</p>
+              </div>
+
+              <div>
+                <strong>Business Type</strong>
+                <p>${value(business?.business_type)}</p>
+              </div>
+
+              <div>
+                <strong>Sector</strong>
+                <p>${value(business?.sector)}</p>
+              </div>
+
+              <div>
+                <strong>Business Address</strong>
+                <p>${value(business?.business_address)}</p>
+              </div>
+
+              <div>
+                <strong>State</strong>
+                <p>${value(business?.state)}</p>
+              </div>
+
+              <div>
+                <strong>LGA</strong>
+                <p>${value(business?.lga)}</p>
+              </div>
+
+              <div>
+                <strong>Landmark</strong>
+                <p>${value(business?.landmark)}</p>
+              </div>
+
+              <div>
+                <strong>Date Business Started</strong>
+                <p>${value(business?.date_business_started)}</p>
+              </div>
+
+              <div>
+                <strong>Premises Status</strong>
+                <p>${value(business?.premises_status)}</p>
+              </div>
+
+              <div>
+                <strong>Time at Current Premises</strong>
+                <p>${value(business?.time_at_current_premises)}</p>
+              </div>
+
+              <div>
+                <strong>Number of Employees</strong>
+                <p>${value(business?.number_of_employees)}</p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ==========================================
+               4. LOAN PURPOSE
+          =========================================== -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>4. Loan Purpose</h3>
+
+            <div style="margin-top:18px;">
+
+              <p>
+                <strong>Purpose:</strong>
+                ${value(loanPurpose?.purpose)}
+              </p>
+
+              <p style="margin-top:12px;">
+                <strong>Amount Required:</strong>
+                ${money(loanPurpose?.amount_required)}
+              </p>
+
+              <p style="margin-top:12px;">
+                <strong>Description:</strong>
+                ${value(loanPurpose?.description)}
+              </p>
+
+              <p style="margin-top:12px;">
+                <strong>Use of Funds:</strong>
+                ${value(loanPurpose?.use_of_funds)}
+              </p>
+
+              <p style="margin-top:12px;">
+                <strong>Officer Assessment:</strong>
+                ${value(loanPurpose?.officer_assessment)}
+              </p>
+
+              <p style="margin-top:12px;">
+                <strong>Verification Comments:</strong>
+                ${value(loanPurpose?.verification_comments)}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- ==========================================
+               5. FINANCIAL ASSESSMENT
+          =========================================== -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>5. Financial Assessment</h3>
+
+            <div class="dashboard-grid" style="margin-top:18px;">
+
+              <div>
+                <strong>Daily Sales</strong>
+                <p>${money(financial?.daily_sales)}</p>
+              </div>
+
+              <div>
+                <strong>Days Open Per Month</strong>
+                <p>${value(financial?.days_open_month)}</p>
+              </div>
+
+              <div>
+                <strong>Monthly Sales</strong>
+                <p>${money(financial?.monthly_sales)}</p>
+              </div>
+
+              <div>
+                <strong>Annual Sales</strong>
+                <p>${money(financial?.annual_sales)}</p>
+              </div>
+
+              <div>
+                <strong>Daily COGS</strong>
+                <p>${money(financial?.daily_cogs)}</p>
+              </div>
+
+              <div>
+                <strong>Monthly COGS</strong>
+                <p>${money(financial?.monthly_cogs)}</p>
+              </div>
+
+              <div>
+                <strong>Annual COGS</strong>
+                <p>${money(financial?.annual_cogs)}</p>
+              </div>
+
+              <div>
+                <strong>Gross Profit</strong>
+                <p>${money(financial?.gross_profit)}</p>
+              </div>
+
+              <div>
+                <strong>Gross Margin</strong>
+                <p>${value(financial?.gross_margin)}%</p>
+              </div>
+
+              <div>
+                <strong>Operating Expenses</strong>
+                <p>${money(financial?.total_operating_expenses)}</p>
+              </div>
+
+              <div>
+                <strong>Net Business Income</strong>
+                <p>${money(financial?.net_business_income)}</p>
+              </div>
+
+              <div>
+                <strong>Household Expenses</strong>
+                <p>${money(financial?.total_household_expenses)}</p>
+              </div>
+
+              <div>
+                <strong>Existing Monthly Repayment</strong>
+                <p>${money(financial?.total_existing_monthly_repayment)}</p>
+              </div>
+
+              <div>
+                <strong>Net Disposable Income</strong>
+                <p>${money(financial?.net_disposable_income)}</p>
+              </div>
+
+              <div>
+                <strong>Proposed Loan Repayment</strong>
+                <p>${money(financial?.proposed_loan_repayment)}</p>
+              </div>
+
+              <div>
+                <strong>DSCR</strong>
+                <p>${value(financial?.dscr)}</p>
+              </div>
+
+              <div>
+                <strong>Total Assets</strong>
+                <p>${money(financial?.total_assets)}</p>
+              </div>
+
+              <div>
+                <strong>Total Liabilities</strong>
+                <p>${money(financial?.total_liabilities)}</p>
+              </div>
+
+              <div>
+                <strong>Net Worth</strong>
+                <p>${money(financial?.net_worth)}</p>
+              </div>
+
+              <div>
+                <strong>Balance Check</strong>
+                <p>${yesNo(financial?.balance_check)}</p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ==========================================
+               6. INVENTORY ASSESSMENT
+          =========================================== -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>6. Inventory Assessment</h3>
+
+            <div class="dashboard-grid" style="margin-top:18px;">
+
+              <div>
+                <strong>Current Inventory Value</strong>
+                <p>${money(inventory?.current_inventory_value)}</p>
+              </div>
+
+              <div>
+                <strong>Average Monthly Purchases</strong>
+                <p>${money(inventory?.average_monthly_purchases)}</p>
+              </div>
+
+              <div>
+                <strong>Average Monthly COGS</strong>
+                <p>${money(inventory?.average_monthly_cogs)}</p>
+              </div>
+
+              <div>
+                <strong>Monthly Turnover</strong>
+                <p>${value(inventory?.monthly_turnover)}</p>
+              </div>
+
+              <div>
+                <strong>Annual Turnover</strong>
+                <p>${value(inventory?.annual_turnover)}</p>
+              </div>
+
+              <div>
+                <strong>Holding Period</strong>
+                <p>${value(inventory?.holding_period_days)} days</p>
+              </div>
+
+              <div>
+                <strong>Rotation Classification</strong>
+                <p>${value(inventory?.rotation_classification)}</p>
+              </div>
+
+              <div>
+                <strong>Stock Level</strong>
+                <p>${value(inventory?.stock_level)}</p>
+              </div>
+
+              <div>
+                <strong>Stock Movement</strong>
+                <p>${value(inventory?.stock_movement)}</p>
+              </div>
+
+              <div>
+                <strong>Slow Moving Stock</strong>
+                <p>${yesNo(inventory?.slow_moving_stock)}</p>
+              </div>
+
+              <div>
+                <strong>Obsolete / Damaged Stock</strong>
+                <p>${yesNo(inventory?.obsolete_damaged_stock)}</p>
+              </div>
+
+              <div>
+                <strong>Stock-Out Frequency</strong>
+                <p>${value(inventory?.stock_out_frequency)}</p>
+              </div>
+
+              <div>
+                <strong>Seasonal Stock</strong>
+                <p>${yesNo(inventory?.seasonal_stock)}</p>
+              </div>
+
+              <div>
+                <strong>Major Suppliers</strong>
+                <p>${value(inventory?.major_suppliers)}</p>
+              </div>
+
+              <div>
+                <strong>Number of Major Suppliers</strong>
+                <p>${value(inventory?.number_of_major_suppliers)}</p>
+              </div>
+
+              <div>
+                <strong>Supplier Credit Available</strong>
+                <p>${yesNo(inventory?.supplier_credit_available)}</p>
+              </div>
+
+              <div>
+                <strong>Supplier Credit Period</strong>
+                <p>${value(inventory?.average_supplier_credit_period)}</p>
+              </div>
+
+              <div>
+                <strong>Supplier Dependency</strong>
+                <p>${value(inventory?.supplier_dependency)}</p>
+              </div>
+
+            </div>
+
+
+            <div style="margin-top:25px;">
+
+              <h4>Inventory Items</h4>
+
+              ${
+                inventoryItems.length > 0
+
+                  ? `
+
+                    <div style="
+                      overflow-x:auto;
+                      margin-top:15px;
+                    ">
+
+                      <table style="
+                        width:100%;
+                        border-collapse:collapse;
+                      ">
+
+                        <thead>
+
+                          <tr>
+
+                            <th style="
+                              text-align:left;
+                              padding:10px;
+                              border-bottom:1px solid #ddd;
+                            ">
+                              Category
+                            </th>
+
+                            <th style="
+                              text-align:right;
+                              padding:10px;
+                              border-bottom:1px solid #ddd;
+                            ">
+                              Estimated Value
+                            </th>
+
+                          </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                          ${inventoryItems.map(item => `
+
+                            <tr>
+
+                              <td style="
+                                padding:10px;
+                                border-bottom:1px solid #eee;
+                              ">
+                                ${value(item.category)}
+                              </td>
+
+                              <td style="
+                                padding:10px;
+                                text-align:right;
+                                border-bottom:1px solid #eee;
+                              ">
+                                ${money(item.estimated_value)}
+                              </td>
+
+                            </tr>
+
+                          `).join("")}
+
+                        </tbody>
+
+                      </table>
+
+                    </div>
+
+                  `
+
+                  : `
+
+                    <p style="margin-top:12px;">
+                      No inventory items recorded.
+                    </p>
+
+                  `
+              }
+
+            </div>
+
+          </div>
+
+
+          <!-- ==========================================
+               7. EXISTING LOAN OBLIGATIONS
+          =========================================== -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>7. Existing Loan Obligations</h3>
+
+            ${
+              obligations.length > 0
+
+                ? `
+
+                  <div style="
+                    overflow-x:auto;
+                    margin-top:18px;
+                  ">
+
+                    <table style="
+                      width:100%;
+                      border-collapse:collapse;
+                    ">
+
+                      <thead>
+
+                        <tr>
+
+                          <th style="
+                            text-align:left;
+                            padding:10px;
+                            border-bottom:1px solid #ddd;
+                          ">
+                            Institution
+                          </th>
+
+                          <th style="
+                            text-align:right;
+                            padding:10px;
+                            border-bottom:1px solid #ddd;
+                          ">
+                            Outstanding Balance
+                          </th>
+
+                          <th style="
+                            text-align:right;
+                            padding:10px;
+                            border-bottom:1px solid #ddd;
+                          ">
+                            Monthly Repayment
+                          </th>
+
+                          <th style="
+                            text-align:left;
+                            padding:10px;
+                            border-bottom:1px solid #ddd;
+                          ">
+                            Maturity Date
+                          </th>
+
+                        </tr>
+
+                      </thead>
+
+                      <tbody>
+
+                        ${obligations.map(item => `
+
+                          <tr>
+
+                            <td style="
+                              padding:10px;
+                              border-bottom:1px solid #eee;
+                            ">
+                              ${value(item.institution)}
+                            </td>
+
+                            <td style="
+                              padding:10px;
+                              text-align:right;
+                              border-bottom:1px solid #eee;
+                            ">
+                              ${money(item.outstanding_balance)}
+                            </td>
+
+                            <td style="
+                              padding:10px;
+                              text-align:right;
+                              border-bottom:1px solid #eee;
+                            ">
+                              ${money(item.monthly_repayment)}
+                            </td>
+
+                            <td style="
+                              padding:10px;
+                              border-bottom:1px solid #eee;
+                            ">
+                              ${value(item.maturity_date)}
+                            </td>
+
+                          </tr>
+
+                        `).join("")}
+
+                      </tbody>
+
+                    </table>
+
+                  </div>
+
+                `
+
+                : `
+
+                  <div style="
+                    margin-top:18px;
+                    padding:15px;
+                    background:#f8f9fa;
+                    border-radius:8px;
+                  ">
+
+                    No existing loan obligations recorded.
+
+                  </div>
+
+                `
+            }
+
+          </div>
+
+
+          <!-- ==========================================
+               8. GUARANTORS
+          =========================================== -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>8. Guarantors</h3>
+
+            ${
+              guarantors && guarantors.length > 0
+
+                ? `
+
+                  <div style="
+                    margin-top:18px;
+                  ">
+
+                    ${guarantors.map((guarantor, index) => `
+
+                      <div style="
+                        padding:18px;
+                        margin-bottom:15px;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                      ">
+
+                        <h4>
+                          Guarantor ${guarantor.guarantor_number || index + 1}
+                        </h4>
+
+                        <div
+                          class="dashboard-grid"
+                          style="margin-top:15px;"
+                        >
+
+                          <div>
+                            <strong>Full Name</strong>
+                            <p>
+                              ${value(guarantor.full_name)}
+                            </p>
+                          </div>
+
+                          <div>
+                            <strong>Phone</strong>
+                            <p>
+                              ${value(guarantor.phone_number)}
+                            </p>
+                          </div>
+
+                          <div>
+                            <strong>Relationship</strong>
+                            <p>
+                              ${value(guarantor.relationship)}
+                            </p>
+                          </div>
+
+                          <div>
+                            <strong>Status</strong>
+                            <p>
+                              ${value(guarantor.status)}
+                            </p>
+                          </div>
+
+                          <div style="
+                            grid-column:1/-1;
+                          ">
+
+                            <strong>Address</strong>
+
+                            <p>
+                              ${value(guarantor.address)}
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    `).join("")}
+
+                  </div>
+
+                `
+
+                : `
+
+                  <div style="
+                    margin-top:18px;
+                    padding:15px;
+                    background:#f8f9fa;
+                    border-radius:8px;
+                  ">
+
+                    No guarantors recorded.
+
+                  </div>
+
+                `
+            }
+
+          </div>
+
+
+          <!-- ==========================================
+               SUPERVISOR REVIEW NOTICE
+          =========================================== -->
 
           <div
             class="card"
             style="
-              margin-top:20px;
+              margin-top:25px;
               background:#f8f9fa;
             "
           >
 
-            <h3>Credit Review</h3>
+            <h3>Supervisor Review</h3>
 
             <p style="margin-top:10px;">
 
-              The complete appraisal sections will be displayed
-              here as the Supervisor review module is completed.
+              The above information was submitted by the Loan Officer
+              for Supervisor review.
 
             </p>
 
             <p style="margin-top:8px;">
 
-              The Supervisor will make the final credit recommendation
-              after reviewing the complete appraisal file.
+              Supervisor credit recommendation and approval actions
+              will be added in the next stage.
 
             </p>
 
           </div>
 
 
-          <!-- ACTIONS -->
+          <!-- BACK BUTTON -->
 
-          <div class="card" style="margin-top:20px;">
+          <div style="margin-top:25px;">
 
-            <h3>Supervisor Actions</h3>
-
-            <div style="margin-top:15px;">
-
-              <button
-                class="secondary-btn"
-                onclick="showSupervisorDashboard()"
-              >
-                Back to Applications
-              </button>
-
-            </div>
+            <button
+              class="secondary-btn"
+              onclick="showSupervisorDashboard()"
+            >
+              Back to Applications
+            </button>
 
           </div>
 
@@ -699,12 +1646,10 @@ window.viewSupervisorApplication = async function (loanId) {
             An error occurred while loading this loan application.
           </p>
 
-          <p
-            style="
-              margin-top:10px;
-              color:red;
-            "
-          >
+          <p style="
+            margin-top:10px;
+            color:red;
+          ">
             ${error.message || "Unknown error"}
           </p>
 
@@ -724,8 +1669,7 @@ window.viewSupervisorApplication = async function (loanId) {
 
   }
 
-}
-
+};
   const applicationCount =
     applications?.length || 0;
 
