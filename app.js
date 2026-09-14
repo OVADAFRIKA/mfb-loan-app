@@ -5556,13 +5556,20 @@ async function showLoanDetails(loanId) {
     text-align:right;
   ">
 
-    <button
-      type="button"
-      class="primary-btn"
-      onclick="saveGuarantors('${loan.id}')"
-    >
-      Save Guarantors
-    </button>
+   <button
+  class="primary-btn"
+  onclick="saveGuarantors('${loan.id}')"
+>
+  Save Guarantors
+</button>
+
+<button
+  class="primary-btn"
+  style="margin-left:10px;"
+  onclick="submitLoanToSupervisor('${loan.id}')"
+>
+  Submit to Supervisor
+</button>
 
   </div>
 
