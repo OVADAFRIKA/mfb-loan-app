@@ -2234,6 +2234,263 @@ window.approveSupervisorLoan =
   }
 
 };
+
+  // ======================================================
+// SUPERVISOR RETURN LOAN FOR CORRECTION
+// ======================================================
+
+window.returnSupervisorLoan =
+  async function (loanId) {
+
+  const message =
+    document.getElementById(
+      "supervisorDecisionMessage"
+    );
+
+  try {
+
+    // --------------------------------------------------
+    // GET CURRENT SESSION
+    // --------------------------------------------------
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const session =
+      sessionData?.session;
+
+    if (!session) {
+
+      if (message) {
+        message.textContent =
+          "Your session has expired. Please log in again.";
+
+        message.style.color = "red";
+      }
+
+      return;
+    }
+
+
+    // --------------------------------------------------
+    // GET SUPERVISOR PROFILE
+    // --------------------------------------------------
+
+    const {
+      data: supervisor,
+      error: supervisorError
+    } =
+      await supabaseClient
+        .from("users")
+        .select(`
+          id,
+          full_name,
+          role,
+          status
+        `)
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+    if (supervisorError) {
+      throw supervisorError;
+    }
+
+
+    if (
+      !supervisor ||
+      supervisor.role !== "supervisor" ||
+      supervisor.status !== "active"
+    ) {
+
+      throw new Error(
+        "You are not authorized to return loans."
+      );
+
+    }
+
+
+    // --------------------------------------------------
+    // GET RETURN REASON
+    // --------------------------------------------------
+
+    const reason =
+      prompt(
+        "Please enter the reason for returning this loan for correction:"
+      );
+
+
+    if (
+      reason === null
+    ) {
+      return;
+    }
+
+
+    if (
+      !reason.trim()
+    ) {
+
+      if (message) {
+
+        message.textContent =
+          "A return reason is required.";
+
+        message.style.color = "red";
+
+      }
+
+      return;
+    }
+
+
+    // --------------------------------------------------
+    // CONFIRM RETURN
+    // --------------------------------------------------
+
+    const confirmed =
+      confirm(
+        "Are you sure you want to RETURN this loan for correction?"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    if (message) {
+
+      message.textContent =
+        "Returning loan for correction...";
+
+      message.style.color = "";
+
+    }
+
+
+    // --------------------------------------------------
+    // CREATE APPROVAL RECORD
+    // --------------------------------------------------
+
+    const {
+      error: approvalError
+    } =
+      await supabaseClient
+        .from("loan_approvals")
+        .insert({
+
+          loan_application_id:
+            loanId,
+
+          reviewed_by:
+            supervisor.id,
+
+          review_date:
+            new Date().toISOString(),
+
+          decision:
+            "returned",
+
+          return_reason:
+            reason.trim(),
+
+          approval_authority:
+            "Supervisor",
+
+          status:
+            "returned"
+
+        });
+
+    if (approvalError) {
+      throw approvalError;
+    }
+
+
+    // --------------------------------------------------
+    // UPDATE LOAN APPLICATION
+    // --------------------------------------------------
+
+    const {
+      error: updateError
+    } =
+      await supabaseClient
+        .from("loan_applications")
+        .update({
+
+          status:
+            "returned",
+
+          updated_at:
+            new Date().toISOString()
+
+        })
+        .eq(
+          "id",
+          loanId
+        );
+
+    if (updateError) {
+      throw updateError;
+    }
+
+
+    // --------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------
+
+    if (message) {
+
+      message.textContent =
+        "Loan returned to the Loan Officer for correction.";
+
+      message.style.color =
+        "green";
+
+    }
+
+
+    alert(
+      "Loan returned to the Loan Officer for correction."
+    );
+
+
+    // Return to Supervisor dashboard
+
+    await showSupervisorDashboard();
+
+
+  } catch (error) {
+
+    console.error(
+      "Supervisor Return Error:",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Unable to return loan: " +
+        (
+          error.message ||
+          "Unknown error"
+        );
+
+      message.style.color =
+        "red";
+
+    }
+
+  }
+
+};
   const applicationCount =
     applications?.length || 0;
 
