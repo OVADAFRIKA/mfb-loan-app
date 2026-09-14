@@ -1606,18 +1606,238 @@ window.viewSupervisorApplication = async function (loanId) {
           </div>
 
 
-          <!-- BACK BUTTON -->
+<!-- ==========================================
+     SUPERVISOR CREDIT DECISION
+=========================================== -->
 
-          <div style="margin-top:25px;">
+<div
+  class="card"
+  style="
+    margin-top:25px;
+    border:2px solid #ddd;
+  "
+>
 
-            <button
-              class="secondary-btn"
-              onclick="showSupervisorDashboard()"
-            >
-              Back to Applications
-            </button>
+  <h3>9. Supervisor Credit Decision</h3>
 
-          </div>
+  <p style="margin-top:8px;">
+    Complete the credit decision after reviewing the full
+    appraisal submitted by the Loan Officer.
+  </p>
+
+
+  <!-- APPROVED AMOUNT AND TENOR -->
+
+  <div
+    class="dashboard-grid"
+    style="margin-top:20px;"
+  >
+
+    <div class="form-group">
+
+      <label>
+        Approved Amount
+      </label>
+
+      <input
+        type="number"
+        id="supervisorApprovedAmount"
+        value="${application.requested_amount || ""}"
+        min="0"
+        step="0.01"
+        placeholder="Enter approved amount"
+      />
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Approved Tenor (Months)
+      </label>
+
+      <input
+        type="number"
+        id="supervisorApprovedTenor"
+        value="${application.requested_tenor || ""}"
+        min="1"
+        step="1"
+        placeholder="Enter approved tenor"
+      />
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Approved Repayment Frequency
+      </label>
+
+      <select id="supervisorRepaymentFrequency">
+
+        <option value="">
+          Select frequency
+        </option>
+
+        <option value="daily">
+          Daily
+        </option>
+
+        <option value="weekly">
+          Weekly
+        </option>
+
+        <option value="monthly">
+          Monthly
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Approved Interest Rate (%)
+      </label>
+
+      <input
+        type="number"
+        id="supervisorInterestRate"
+        value="${application.interest_rate || ""}"
+        min="0"
+        step="0.01"
+        placeholder="Enter interest rate"
+      />
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Interest Method
+      </label>
+
+      <select id="supervisorInterestMethod">
+
+        <option value="">
+          Select method
+        </option>
+
+        <option value="flat">
+          Flat
+        </option>
+
+        <option value="reducing_balance">
+          Reducing Balance
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        Grace Period (Days)
+      </label>
+
+      <input
+        type="number"
+        id="supervisorGracePeriod"
+        value="${application.grace_period || 0}"
+        min="0"
+        step="1"
+        placeholder="Enter grace period"
+      />
+
+    </div>
+
+  </div>
+
+
+  <!-- CONDITIONS / REMARKS -->
+
+  <div
+    class="form-group"
+    style="margin-top:20px;"
+  >
+
+    <label>
+      Supervisor Conditions / Remarks
+    </label>
+
+    <textarea
+      id="supervisorConditionsRemarks"
+      rows="5"
+      placeholder="Enter approval conditions, observations or remarks"
+    ></textarea>
+
+  </div>
+
+
+  <!-- DECISION BUTTONS -->
+
+  <div
+    style="
+      margin-top:25px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    "
+  >
+
+    <button
+      class="primary-btn"
+      onclick="approveSupervisorLoan('${application.id}')"
+    >
+      Approve Loan
+    </button>
+
+
+    <button
+      class="secondary-btn"
+      onclick="returnSupervisorLoan('${application.id}')"
+    >
+      Return for Correction
+    </button>
+
+
+    <button
+      class="secondary-btn"
+      onclick="declineSupervisorLoan('${application.id}')"
+    >
+      Decline Loan
+    </button>
+
+  </div>
+
+
+  <p
+    id="supervisorDecisionMessage"
+    style="margin-top:15px;"
+  ></p>
+
+</div>
+
+
+<!-- BACK BUTTON -->
+
+<div style="margin-top:25px;">
+
+  <button
+    class="secondary-btn"
+    onclick="showSupervisorDashboard()"
+  >
+    Back to Applications
+  </button>
+
+</div>
 
 
         </main>
