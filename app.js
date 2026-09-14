@@ -1890,6 +1890,350 @@ window.viewSupervisorApplication = async function (loanId) {
   }
 
 };
+
+  // ======================================================
+// SUPERVISOR APPROVE LOAN
+// ======================================================
+
+window.approveSupervisorLoan =
+  async function (loanId) {
+
+  const message =
+    document.getElementById(
+      "supervisorDecisionMessage"
+    );
+
+  try {
+
+    // --------------------------------------------------
+    // GET CURRENT SESSION
+    // --------------------------------------------------
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const session =
+      sessionData?.session;
+
+    if (!session) {
+
+      if (message) {
+
+        message.textContent =
+          "Your session has expired. Please log in again.";
+
+        message.style.color = "red";
+
+      }
+
+      return;
+    }
+
+
+    // --------------------------------------------------
+    // GET SUPERVISOR PROFILE
+    // --------------------------------------------------
+
+    const {
+      data: supervisor,
+      error: supervisorError
+    } =
+      await supabaseClient
+        .from("users")
+        .select(`
+          id,
+          full_name,
+          role,
+          status
+        `)
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+    if (supervisorError) {
+      throw supervisorError;
+    }
+
+
+    if (
+      !supervisor ||
+      supervisor.role !== "supervisor" ||
+      supervisor.status !== "active"
+    ) {
+
+      throw new Error(
+        "You are not authorized to approve loans."
+      );
+
+    }
+
+
+    // --------------------------------------------------
+    // GET APPROVED VALUES
+    // --------------------------------------------------
+
+    const approvedAmount =
+      Number(
+        document.getElementById(
+          "supervisorApprovedAmount"
+        )?.value || 0
+      );
+
+    const approvedTenor =
+      Number(
+        document.getElementById(
+          "supervisorApprovedTenor"
+        )?.value || 0
+      );
+
+    const repaymentFrequency =
+      document.getElementById(
+        "supervisorRepaymentFrequency"
+      )?.value || null;
+
+    const interestRate =
+      Number(
+        document.getElementById(
+          "supervisorInterestRate"
+        )?.value || 0
+      );
+
+    const interestMethod =
+      document.getElementById(
+        "supervisorInterestMethod"
+      )?.value || null;
+
+    const gracePeriod =
+      Number(
+        document.getElementById(
+          "supervisorGracePeriod"
+        )?.value || 0
+      );
+
+    const conditionsRemarks =
+      document.getElementById(
+        "supervisorConditionsRemarks"
+      )?.value.trim() || null;
+
+
+    // --------------------------------------------------
+    // VALIDATE APPROVED AMOUNT
+    // --------------------------------------------------
+
+    if (
+      !approvedAmount ||
+      approvedAmount <= 0
+    ) {
+
+      if (message) {
+
+        message.textContent =
+          "Please enter a valid approved amount.";
+
+        message.style.color = "red";
+
+      }
+
+      return;
+    }
+
+
+    // --------------------------------------------------
+    // VALIDATE APPROVED TENOR
+    // --------------------------------------------------
+
+    if (
+      !approvedTenor ||
+      approvedTenor <= 0
+    ) {
+
+      if (message) {
+
+        message.textContent =
+          "Please enter a valid approved tenor.";
+
+        message.style.color = "red";
+
+      }
+
+      return;
+    }
+
+
+    // --------------------------------------------------
+    // CONFIRM APPROVAL
+    // --------------------------------------------------
+
+    const confirmed =
+      confirm(
+        "Are you sure you want to APPROVE this loan?"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    if (message) {
+
+      message.textContent =
+        "Processing approval...";
+
+      message.style.color = "";
+
+    }
+
+
+    // --------------------------------------------------
+    // CREATE LOAN APPROVAL RECORD
+    // --------------------------------------------------
+
+    const {
+      data: approval,
+      error: approvalError
+    } =
+      await supabaseClient
+        .from("loan_approvals")
+        .insert({
+
+          loan_application_id:
+            loanId,
+
+          reviewed_by:
+            supervisor.id,
+
+          review_date:
+            new Date().toISOString(),
+
+          decision:
+            "approved",
+
+          approved_amount:
+            approvedAmount,
+
+          approved_tenor:
+            approvedTenor,
+
+          approved_repayment_frequency:
+            repaymentFrequency,
+
+          approved_interest_rate:
+            interestRate,
+
+          interest_method:
+            interestMethod,
+
+          grace_period:
+            gracePeriod,
+
+          conditions_remarks:
+            conditionsRemarks,
+
+          approval_authority:
+            "Supervisor",
+
+          status:
+            "approved"
+
+        })
+        .select()
+        .single();
+
+    if (approvalError) {
+      throw approvalError;
+    }
+
+
+    // --------------------------------------------------
+    // UPDATE LOAN APPLICATION
+    // --------------------------------------------------
+
+    const {
+      error: updateError
+    } =
+      await supabaseClient
+        .from("loan_applications")
+        .update({
+
+          status:
+            "approved",
+
+          recommended_amount:
+            approvedAmount,
+
+          recommended_tenor:
+            approvedTenor,
+
+          updated_at:
+            new Date().toISOString()
+
+        })
+        .eq(
+          "id",
+          loanId
+        );
+
+    if (updateError) {
+      throw updateError;
+    }
+
+
+    // --------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------
+
+    if (message) {
+
+      message.textContent =
+        "Loan approved successfully.";
+
+      message.style.color =
+        "green";
+
+    }
+
+
+    alert(
+      "Loan approved successfully."
+    );
+
+
+    // Return to Supervisor dashboard
+
+    await showSupervisorDashboard();
+
+
+  } catch (error) {
+
+    console.error(
+      "Supervisor Approval Error:",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Unable to approve loan: " +
+        (
+          error.message ||
+          "Unknown error"
+        );
+
+      message.style.color =
+        "red";
+
+    }
+
+  }
+
+};
   const applicationCount =
     applications?.length || 0;
 
