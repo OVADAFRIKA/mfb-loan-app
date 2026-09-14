@@ -8479,7 +8479,201 @@ window.saveGuarantors =
   }
 
 };
+// ======================================================
+// SUBMIT LOAN APPLICATION TO SUPERVISOR
+// ======================================================
 
+window.submitLoanToSupervisor =
+  async function (loanId) {
+
+  const message =
+    document.getElementById(
+      "guarantorSaveMessage"
+    );
+
+  try {
+
+    // ----------------------------------------------
+    // CHECK LOGIN SESSION
+    // ----------------------------------------------
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const session =
+      sessionData?.session;
+
+    if (!session) {
+
+      if (message) {
+
+        message.textContent =
+          "Your session has expired. Please log in again.";
+
+        message.style.color =
+          "red";
+      }
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // CHECK LOAN APPLICATION ID
+    // ----------------------------------------------
+
+    if (!loanId) {
+
+      if (message) {
+
+        message.textContent =
+          "Loan application ID is missing.";
+
+        message.style.color =
+          "red";
+      }
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // CHECK CURRENT APPLICATION STATUS
+    // ----------------------------------------------
+
+    const {
+      data: loanApplication,
+      error: loanError
+    } =
+      await supabaseClient
+        .from("loan_applications")
+        .select("id, status")
+        .eq("id", loanId)
+        .maybeSingle();
+
+    if (loanError) {
+      throw loanError;
+    }
+
+
+    if (!loanApplication) {
+
+      if (message) {
+
+        message.textContent =
+          "Loan application could not be found.";
+
+        message.style.color =
+          "red";
+      }
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // ONLY DRAFT APPLICATIONS CAN BE SUBMITTED
+    // ----------------------------------------------
+
+    if (loanApplication.status !== "draft") {
+
+      if (message) {
+
+        message.textContent =
+          "This loan application cannot be submitted because its current status is '" +
+          loanApplication.status +
+          "'.";
+
+        message.style.color =
+          "red";
+      }
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // SUBMIT TO SUPERVISOR
+    // ----------------------------------------------
+
+    const {
+      error: updateError
+    } =
+      await supabaseClient
+        .from("loan_applications")
+        .update({
+
+          status:
+            "submitted",
+
+          submitted_at:
+            new Date().toISOString(),
+
+          updated_at:
+            new Date().toISOString()
+
+        })
+        .eq(
+          "id",
+          loanId
+        );
+
+
+    if (updateError) {
+      throw updateError;
+    }
+
+
+    // ----------------------------------------------
+    // SUCCESS
+    // ----------------------------------------------
+
+    if (message) {
+
+      message.textContent =
+        "Loan application submitted to Supervisor successfully.";
+
+      message.style.color =
+        "green";
+
+    }
+
+
+    console.log(
+      "Loan application submitted to Supervisor:",
+      loanId
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Submit to Supervisor Error:",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Unable to submit loan application: " +
+        (error.message || "Unknown error");
+
+      message.style.color =
+        "red";
+
+    }
+
+  }
+
+};
 
 // ------------------------------------------------------
 // INITIALISE SECTION 8
