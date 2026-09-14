@@ -414,7 +414,7 @@ async function showSupervisorDashboard() {
 
     return;
   }
-async function viewSupervisorApplication(loanId) {
+window.viewSupervisorApplication = async function (loanId) {
 
   try {
 
