@@ -414,7 +414,317 @@ async function showSupervisorDashboard() {
 
     return;
   }
+async function viewSupervisorApplication(loanId) {
 
+  try {
+
+    const {
+      data: application,
+      error
+    } = await supabaseClient
+      .from("loan_applications")
+      .select(`
+        *,
+        customers (
+          *
+        )
+      `)
+      .eq("id", loanId)
+      .maybeSingle();
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    if (!application) {
+
+      root.innerHTML = `
+        <div class="main-content">
+
+          <div class="card">
+
+            <h2>Loan Application Not Found</h2>
+
+            <p style="margin-top:10px;">
+              The selected loan application could not be found.
+            </p>
+
+            <button
+              class="primary-btn"
+              onclick="showSupervisorDashboard()"
+              style="margin-top:20px;"
+            >
+              Back to Supervisor Dashboard
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const customer =
+      application.customers || {};
+
+
+    root.innerHTML = `
+
+      <div class="app-header">
+
+        <h1>MFB Loan Appraisal System</h1>
+
+        <div>
+
+          Supervisor
+
+          <button
+            class="secondary-btn"
+            onclick="logout()"
+            style="margin-left:15px;"
+          >
+            Sign Out
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="app-container">
+
+
+        <aside class="sidebar">
+
+          <button
+            onclick="showSupervisorDashboard()"
+          >
+            Dashboard
+          </button>
+
+          <button class="active">
+            Loan Review
+          </button>
+
+          <button>
+            Under Review
+          </button>
+
+          <button>
+            Approved
+          </button>
+
+          <button>
+            Returned
+          </button>
+
+          <button>
+            Declined
+          </button>
+
+        </aside>
+
+
+        <main class="main-content">
+
+
+          <h2>Supervisor Loan Review</h2>
+
+          <p style="margin-top:8px;">
+            Review the submitted loan application before making a
+            Supervisor recommendation.
+          </p>
+
+
+          <!-- LOAN INFORMATION -->
+
+          <div class="card" style="margin-top:25px;">
+
+            <h3>1. Loan Information</h3>
+
+            <div class="dashboard-grid" style="margin-top:15px;">
+
+              <div>
+                <strong>Loan Code</strong>
+                <p>
+                  ${application.loan_code || "-"}
+                </p>
+              </div>
+
+              <div>
+                <strong>Requested Amount</strong>
+                <p>
+                  ₦${Number(
+                    application.requested_amount || 0
+                  ).toLocaleString()}
+                </p>
+              </div>
+
+              <div>
+                <strong>Requested Tenor</strong>
+                <p>
+                  ${application.requested_tenor || "-"} months
+                </p>
+              </div>
+
+              <div>
+                <strong>Status</strong>
+                <p>
+                  ${application.status || "-"}
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- CUSTOMER INFORMATION -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>2. Customer / KYC</h3>
+
+            <div class="dashboard-grid" style="margin-top:15px;">
+
+              <div>
+                <strong>Customer Name</strong>
+                <p>
+                  ${customer.full_name || "-"}
+                </p>
+              </div>
+
+              <div>
+                <strong>Customer Code</strong>
+                <p>
+                  ${customer.customer_code || "-"}
+                </p>
+              </div>
+
+              <div>
+                <strong>Phone</strong>
+                <p>
+                  ${customer.phone_number || customer.phone || "-"}
+                </p>
+              </div>
+
+              <div>
+                <strong>Email</strong>
+                <p>
+                  ${customer.email || "-"}
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- INFORMATION NOTICE -->
+
+          <div
+            class="card"
+            style="
+              margin-top:20px;
+              background:#f8f9fa;
+            "
+          >
+
+            <h3>Credit Review</h3>
+
+            <p style="margin-top:10px;">
+
+              The complete appraisal sections will be displayed
+              here as the Supervisor review module is completed.
+
+            </p>
+
+            <p style="margin-top:8px;">
+
+              The Supervisor will make the final credit recommendation
+              after reviewing the complete appraisal file.
+
+            </p>
+
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="card" style="margin-top:20px;">
+
+            <h3>Supervisor Actions</h3>
+
+            <div style="margin-top:15px;">
+
+              <button
+                class="secondary-btn"
+                onclick="showSupervisorDashboard()"
+              >
+                Back to Applications
+              </button>
+
+            </div>
+
+          </div>
+
+
+        </main>
+
+      </div>
+
+    `;
+
+  } catch (error) {
+
+    console.error(
+      "Supervisor Review Error:",
+      error
+    );
+
+
+    root.innerHTML = `
+
+      <div class="main-content">
+
+        <div class="card">
+
+          <h2>Unable to Load Loan Review</h2>
+
+          <p style="margin-top:10px;">
+            An error occurred while loading this loan application.
+          </p>
+
+          <p
+            style="
+              margin-top:10px;
+              color:red;
+            "
+          >
+            ${error.message || "Unknown error"}
+          </p>
+
+          <button
+            class="primary-btn"
+            onclick="showSupervisorDashboard()"
+            style="margin-top:20px;"
+          >
+            Back to Supervisor Dashboard
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+}
 
   const applicationCount =
     applications?.length || 0;
