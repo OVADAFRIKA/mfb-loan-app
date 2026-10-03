@@ -361,10 +361,6 @@ async function showSupervisorDashboard() {
 
   try {
 
-    // ==================================================
-    // LOAD APPLICATION COUNTS
-    // ==================================================
-
     const statuses = [
       "submitted",
       "under_review",
@@ -381,80 +377,149 @@ async function showSupervisorDashboard() {
       declined: 0
     };
 
-
     for (const status of statuses) {
 
-      const {
-        count,
-        error
-      } =
-        await supabaseClient
-          .from("loan_applications")
-          .select(
-            "id",
-            {
-              count: "exact",
-              head: true
-            }
-          )
-          .eq(
-            "status",
-            status
-          );
+      const result = await supabaseClient
+        .from("loan_applications")
+        .select("id", {
+          count: "exact",
+          head: true
+        })
+        .eq("status", status);
 
-      if (error) {
-        throw error;
+      if (result.error) {
+        throw result.error;
       }
 
-      counts[status] =
-        count || 0;
-
+      counts[status] = result.count || 0;
     }
 
 
-    // ==================================================
-    // LOAD SUBMITTED APPLICATIONS
-    // ==================================================
-
-    const {
-      data: applications,
-      error: applicationsError
-    } =
-      await supabaseClient
-        .from("loan_applications")
-        .select(`
-          id,
-          loan_code,
-          requested_amount,
-          requested_tenor,
-          application_date,
-          status,
-          submitted_at,
-          customers (
-            full_name,
-            customer_code
-          )
-        `)
-        .eq(
-          "status",
-          "submitted"
+    const result = await supabaseClient
+      .from("loan_applications")
+      .select(`
+        id,
+        loan_code,
+        requested_amount,
+        requested_tenor,
+        application_date,
+        status,
+        submitted_at,
+        customers (
+          full_name,
+          customer_code
         )
-        .order(
-          "submitted_at",
-          {
-            ascending: false
-          }
-        );
+      `)
+      .eq("status", "submitted")
+      .order("submitted_at", {
+        ascending: false
+      });
 
 
-    if (applicationsError) {
-      throw applicationsError;
+    if (result.error) {
+      throw result.error;
     }
 
 
-    // ==================================================
-    // RENDER DASHBOARD
-    // ==================================================
+    const applications = result.data || [];
+
+
+    let applicationRows = "";
+
+    if (applications.length > 0) {
+
+      applicationRows = applications.map(function(application) {
+
+        const customerName =
+          application.customers?.full_name || "-";
+
+        const customerCode =
+          application.customers?.customer_code || "";
+
+        return `
+          <tr>
+
+            <td style="
+              padding:12px;
+              border-bottom:1px solid #eee;
+            ">
+              <strong>
+                ${application.loan_code || "-"}
+              </strong>
+            </td>
+
+            <td style="
+              padding:12px;
+              border-bottom:1px solid #eee;
+            ">
+              ${customerName}
+              <br>
+              <small>${customerCode}</small>
+            </td>
+
+            <td style="
+              padding:12px;
+              text-align:right;
+              border-bottom:1px solid #eee;
+            ">
+              ₦${Number(
+                application.requested_amount || 0
+              ).toLocaleString("en-NG")}
+            </td>
+
+            <td style="
+              padding:12px;
+              text-align:center;
+              border-bottom:1px solid #eee;
+            ">
+              ${application.requested_tenor || "-"} months
+            </td>
+
+            <td style="
+              padding:12px;
+              text-align:center;
+              border-bottom:1px solid #eee;
+            ">
+              ${application.status}
+            </td>
+
+            <td style="
+              padding:12px;
+              text-align:center;
+              border-bottom:1px solid #eee;
+            ">
+              <button
+                class="primary-btn"
+                onclick="viewSupervisorApplication('${application.id}')"
+              >
+                Review
+              </button>
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+
+    } else {
+
+      applicationRows = `
+        <tr>
+          <td
+            colspan="6"
+            style="
+              padding:20px;
+              text-align:center;
+            "
+          >
+            No loan applications are currently awaiting
+            Supervisor review.
+          </td>
+        </tr>
+      `;
+
+    }
+
 
     root.innerHTML = `
 
@@ -481,11 +546,6 @@ async function showSupervisorDashboard() {
 
       <div class="app-container">
 
-
-        <!-- ============================================
-             SIDEBAR
-        ============================================= -->
-
         <aside class="sidebar">
 
           <button class="active">
@@ -493,39 +553,41 @@ async function showSupervisorDashboard() {
           </button>
 
           <button
-            onclick="showSupervisorDashboard()"
+            onclick="showSupervisorApplicationsByStatus('submitted')"
           >
             Submitted Applications
           </button>
 
-          <button>
+          <button
+            onclick="showSupervisorApplicationsByStatus('under_review')"
+          >
             Under Review
           </button>
 
-          <button>
+          <button
+            onclick="showSupervisorApplicationsByStatus('approved')"
+          >
             Approved
           </button>
 
-          <button>
+          <button
+            onclick="showSupervisorApplicationsByStatus('returned')"
+          >
             Returned
           </button>
 
-          <button>
+          <button
+            onclick="showSupervisorApplicationsByStatus('declined')"
+          >
             Declined
           </button>
 
         </aside>
 
 
-        <!-- ============================================
-             MAIN CONTENT
-        ============================================= -->
-
         <main class="main-content">
 
-
           <h2>Welcome, Supervisor</h2>
-
 
           <p style="
             margin:8px 0 25px;
@@ -534,27 +596,17 @@ async function showSupervisorDashboard() {
           </p>
 
 
-          <!-- ==========================================
-               STATUS CARDS
-          =========================================== -->
-
           <div class="dashboard-grid">
-
 
             <div
               class="stat-card"
               style="cursor:pointer;"
               onclick="showSupervisorApplicationsByStatus('submitted')"
             >
-
-              <h3>
-                Submitted
-              </h3>
-
+              <h3>Submitted</h3>
               <div class="value">
                 ${counts.submitted}
               </div>
-
             </div>
 
 
@@ -563,15 +615,10 @@ async function showSupervisorDashboard() {
               style="cursor:pointer;"
               onclick="showSupervisorApplicationsByStatus('under_review')"
             >
-
-              <h3>
-                Under Review
-              </h3>
-
+              <h3>Under Review</h3>
               <div class="value">
                 ${counts.under_review}
               </div>
-
             </div>
 
 
@@ -580,15 +627,10 @@ async function showSupervisorDashboard() {
               style="cursor:pointer;"
               onclick="showSupervisorApplicationsByStatus('approved')"
             >
-
-              <h3>
-                Approved
-              </h3>
-
+              <h3>Approved</h3>
               <div class="value">
                 ${counts.approved}
               </div>
-
             </div>
 
 
@@ -597,15 +639,10 @@ async function showSupervisorDashboard() {
               style="cursor:pointer;"
               onclick="showSupervisorApplicationsByStatus('returned')"
             >
-
-              <h3>
-                Returned
-              </h3>
-
+              <h3>Returned</h3>
               <div class="value">
                 ${counts.returned}
               </div>
-
             </div>
 
 
@@ -614,24 +651,14 @@ async function showSupervisorDashboard() {
               style="cursor:pointer;"
               onclick="showSupervisorApplicationsByStatus('declined')"
             >
-
-              <h3>
-                Declined
-              </h3>
-
+              <h3>Declined</h3>
               <div class="value">
                 ${counts.declined}
               </div>
-
             </div>
-
 
           </div>
 
-
-          <!-- ==========================================
-               SUBMITTED APPLICATIONS
-          =========================================== -->
 
           <div
             class="card"
@@ -642,232 +669,89 @@ async function showSupervisorDashboard() {
               Submitted Loan Applications
             </h2>
 
-
             <p style="margin-top:8px;">
-
               Loan applications currently awaiting
               Supervisor review.
-
             </p>
 
 
-            ${
-              applications &&
-              applications.length > 0
+            <div style="
+              overflow-x:auto;
+              margin-top:20px;
+            ">
 
-                ? `
+              <table style="
+                width:100%;
+                border-collapse:collapse;
+              ">
 
-                  <div style="
-                    overflow-x:auto;
-                    margin-top:20px;
-                  ">
+                <thead>
 
-                    <table style="
-                      width:100%;
-                      border-collapse:collapse;
+                  <tr>
+
+                    <th style="
+                      text-align:left;
+                      padding:12px;
+                      border-bottom:1px solid #ddd;
                     ">
+                      Loan Code
+                    </th>
 
-                      <thead>
+                    <th style="
+                      text-align:left;
+                      padding:12px;
+                      border-bottom:1px solid #ddd;
+                    ">
+                      Customer
+                    </th>
 
-                        <tr>
+                    <th style="
+                      text-align:right;
+                      padding:12px;
+                      border-bottom:1px solid #ddd;
+                    ">
+                      Amount
+                    </th>
 
-                          <th style="
-                            text-align:left;
-                            padding:12px;
-                            border-bottom:1px solid #ddd;
-                          ">
-                            Loan Code
-                          </th>
+                    <th style="
+                      text-align:center;
+                      padding:12px;
+                      border-bottom:1px solid #ddd;
+                    ">
+                      Tenor
+                    </th>
 
+                    <th style="
+                      text-align:center;
+                      padding:12px;
+                      border-bottom:1px solid #ddd;
+                    ">
+                      Status
+                    </th>
 
-                          <th style="
-                            text-align:left;
-                            padding:12px;
-                            border-bottom:1px solid #ddd;
-                          ">
-                            Customer
-                          </th>
+                    <th style="
+                      text-align:center;
+                      padding:12px;
+                      border-bottom:1px solid #ddd;
+                    ">
+                      Action
+                    </th>
 
+                  </tr>
 
-                          <th style="
-                            text-align:right;
-                            padding:12px;
-                            border-bottom:1px solid #ddd;
-                          ">
-                            Amount
-                          </th>
+                </thead>
 
+                <tbody>
 
-                          <th style="
-                            text-align:center;
-                            padding:12px;
-                            border-bottom:1px solid #ddd;
-                          ">
-                            Tenor
-                          </th>
+                  ${applicationRows}
 
+                </tbody>
 
-                          <th style="
-                            text-align:center;
-                            padding:12px;
-                            border-bottom:1px solid #ddd;
-                          ">
-                            Status
-                          </th>
+              </table>
 
-
-                          <th style="
-                            text-align:center;
-                            padding:12px;
-                            border-bottom:1px solid #ddd;
-                          ">
-                            Action
-                          </th>
-
-                        </tr>
-
-                      </thead>
-
-
-                      <tbody>
-
-
-                        ${applications.map(
-                          application => `
-
-                          <tr>
-
-
-                            <td style="
-                              padding:12px;
-                              border-bottom:1px solid #eee;
-                            ">
-
-                              <strong>
-                                ${application.loan_code || "-"}
-                              </strong>
-
-                            </td>
-
-
-                            <td style="
-                              padding:12px;
-                              border-bottom:1px solid #eee;
-                            ">
-
-                              ${
-                                application.customers?.full_name
-                                || "-"
-                              }
-
-                              <br>
-
-                              <small>
-
-                                ${
-                                  application.customers?.customer_code
-                                  || ""
-                                }
-
-                              </small>
-
-                            </td>
-
-
-                            <td style="
-                              padding:12px;
-                              text-align:right;
-                              border-bottom:1px solid #eee;
-                            ">
-
-                              ₦${Number(
-                                application.requested_amount || 0
-                              ).toLocaleString(
-                                "en-NG"
-                              )}
-
-                            </td>
-
-
-                            <td style="
-                              padding:12px;
-                              text-align:center;
-                              border-bottom:1px solid #eee;
-                            ">
-
-                              ${
-                                application.requested_tenor
-                                || "-"
-                              }
-
-                              months
-
-                            </td>
-
-
-                            <td style="
-                              padding:12px;
-                              text-align:center;
-                              border-bottom:1px solid #eee;
-                            ">
-
-                              ${application.status}
-
-                            </td>
-
-
-                            <td style="
-                              padding:12px;
-                              text-align:center;
-                              border-bottom:1px solid #eee;
-                            ">
-
-                              <button
-                                class="primary-btn"
-                                onclick="viewSupervisorApplication('${application.id}')"
-                              >
-                                Review
-                              </button>
-
-                            </td>
-
-
-                          </tr>
-
-                        `
-                        ).join("")}
-
-
-                      </tbody>
-
-                    </table>
-
-                  </div>
-
-                `
-
-                : `
-
-                  <div style="
-                    margin-top:20px;
-                    padding:20px;
-                    background:#f8f9fa;
-                    border-radius:8px;
-                  ">
-
-                    <p>
-                      No loan applications are currently
-                      awaiting Supervisor review.
-                    </p>
-
-                  </div>
-
-                `
-            }
-
+            </div>
 
           </div>
-
 
         </main>
 
@@ -883,7 +767,6 @@ async function showSupervisorDashboard() {
       error
     );
 
-
     root.innerHTML = `
 
       <div class="main-content">
@@ -894,23 +777,17 @@ async function showSupervisorDashboard() {
             Unable to Load Supervisor Dashboard
           </h2>
 
-
           <p style="margin-top:10px;">
             An error occurred while loading the
             Supervisor dashboard.
           </p>
 
-
           <p style="
             margin-top:10px;
             color:red;
           ">
-            ${
-              error.message ||
-              "Unknown error"
-            }
+            ${error.message || "Unknown error"}
           </p>
-
 
           <button
             class="primary-btn"
