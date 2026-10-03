@@ -2491,6 +2491,260 @@ window.returnSupervisorLoan =
   }
 
 };
+  // ======================================================
+// SUPERVISOR DECLINE LOAN
+// ======================================================
+
+window.declineSupervisorLoan =
+  async function (loanId) {
+
+  const message =
+    document.getElementById(
+      "supervisorDecisionMessage"
+    );
+
+  try {
+
+    // --------------------------------------------------
+    // GET CURRENT SESSION
+    // --------------------------------------------------
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const session =
+      sessionData?.session;
+
+    if (!session) {
+
+      if (message) {
+
+        message.textContent =
+          "Your session has expired. Please log in again.";
+
+        message.style.color = "red";
+
+      }
+
+      return;
+    }
+
+
+    // --------------------------------------------------
+    // GET SUPERVISOR PROFILE
+    // --------------------------------------------------
+
+    const {
+      data: supervisor,
+      error: supervisorError
+    } =
+      await supabaseClient
+        .from("users")
+        .select(`
+          id,
+          full_name,
+          role,
+          status
+        `)
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+    if (supervisorError) {
+      throw supervisorError;
+    }
+
+
+    if (
+      !supervisor ||
+      supervisor.role !== "supervisor" ||
+      supervisor.status !== "active"
+    ) {
+
+      throw new Error(
+        "You are not authorized to decline loans."
+      );
+
+    }
+
+
+    // --------------------------------------------------
+    // GET DECLINE REASON
+    // --------------------------------------------------
+
+    const reason =
+      prompt(
+        "Please enter the reason for declining this loan:"
+      );
+
+
+    if (reason === null) {
+      return;
+    }
+
+
+    if (!reason.trim()) {
+
+      if (message) {
+
+        message.textContent =
+          "A decline reason is required.";
+
+        message.style.color = "red";
+
+      }
+
+      return;
+    }
+
+
+    // --------------------------------------------------
+    // CONFIRM DECLINE
+    // --------------------------------------------------
+
+    const confirmed =
+      confirm(
+        "Are you sure you want to DECLINE this loan?"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    if (message) {
+
+      message.textContent =
+        "Processing decline...";
+
+      message.style.color = "";
+
+    }
+
+
+    // --------------------------------------------------
+    // CREATE APPROVAL RECORD
+    // --------------------------------------------------
+
+    const {
+      error: approvalError
+    } =
+      await supabaseClient
+        .from("loan_approvals")
+        .insert({
+
+          loan_application_id:
+            loanId,
+
+          reviewed_by:
+            supervisor.id,
+
+          review_date:
+            new Date().toISOString(),
+
+          decision:
+            "declined",
+
+          decline_reason:
+            reason.trim(),
+
+          approval_authority:
+            "Supervisor",
+
+          status:
+            "declined"
+
+        });
+
+    if (approvalError) {
+      throw approvalError;
+    }
+
+
+    // --------------------------------------------------
+    // UPDATE LOAN APPLICATION
+    // --------------------------------------------------
+
+    const {
+      error: updateError
+    } =
+      await supabaseClient
+        .from("loan_applications")
+        .update({
+
+          status:
+            "declined",
+
+          updated_at:
+            new Date().toISOString()
+
+        })
+        .eq(
+          "id",
+          loanId
+        );
+
+    if (updateError) {
+      throw updateError;
+    }
+
+
+    // --------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------
+
+    if (message) {
+
+      message.textContent =
+        "Loan declined successfully.";
+
+      message.style.color =
+        "green";
+
+    }
+
+
+    alert(
+      "Loan declined successfully."
+    );
+
+
+    // Return to Supervisor dashboard
+
+    await showSupervisorDashboard();
+
+
+  } catch (error) {
+
+    console.error(
+      "Supervisor Decline Error:",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Unable to decline loan: " +
+        (
+          error.message ||
+          "Unknown error"
+        );
+
+      message.style.color =
+        "red";
+
+    }
+
+  }
+
+};
   const applicationCount =
     applications?.length || 0;
 
