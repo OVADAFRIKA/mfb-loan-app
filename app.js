@@ -3567,7 +3567,6 @@ window.declineSupervisorLoan =
               `
 
               : `
-
                 <div style="
                   margin-top:20px;
                   padding:20px;
